@@ -2,10 +2,13 @@ import os
 import sys
 from abc import ABC, abstractmethod
 import numpy as np 
-
-
-
-
+import cv2
+import mediapipe as mp
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+from utils.common import read_json
+import time
+from body import Body
 
 
 class ModelBaseClass(ABC):
@@ -20,8 +23,6 @@ class ModelBaseClass(ABC):
     def __call__(self, input_data):
         return self._inference(input_data)
 
-
-
 #########################################################################################################################
 #> Pose Model 
 #########################################################################################################################
@@ -30,76 +31,129 @@ PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
-# path
-MODEL_PATH = "pose_landmarker_lite.task"
+# path (use BASE_DIR for absolute paths)
+MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_lite.task")
+LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
+class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
+    def __init__(self, mode: str = "image"):
+        super().__init__(mode)  # Fix: no self, pass mode
+        self.mapping = LANDMARK_MAPPING
+        # Declaring modularity
+        if mode == "image":
+            self.mode = RunningMode.IMAGE
+        elif mode == "video":
+            self.mode = RunningMode.VIDEO
+        self.settings = PoseLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=MODEL_PATH),
+            running_mode=self.mode,
+            num_poses=1,
+        )
+        self.pose_landmarker = PoseLandmarker.create_from_options(self.settings)
 
-class POSE(object):
-    super().__init__(self, mode=mode)
+        # coordinate storer 
+        self.body = None
 
-    if mode == "image":
-        self.mode = RunningMode.IMAGE
+    def _visualize_body(self, image: np.ndarray, text="Body"):
+        h, w = image.shape[:2]
+        cv2.imshow(text, image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
-
-    self.settings = options = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=MODEL_PATH),
-        running_mode=self.mode,
-        num_poses=1, # -> 1 for image
-    )
-    self.pose_landmarker = PoseLandmarker.create_from_options(self.settings)
-
-    def _inference(self, input:str):
-
-        # processing image
-        if self.mode == "image":
-            # img -> np.ndarray 
-            x = cv2.imread(input)
-
+    def _image_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
+        positions = {k: [] for k in self.mapping}
+        x = mp.Image.create_from_file(input_data)
         results = self.pose_landmarker.detect(x)
-        landmarks = results.pose_landmarks # these are the coordinates 
+        if not results.pose_landmarks:
+            print("No pose detected.")
+            return None
+
+        landmarks = results.pose_landmarks[0]  # Access the first pose
+        for feature in positions:
+            idx = self.mapping[feature]
+            lm = landmarks[idx]
+            if dimensions == 2:
+                coords = (lm.x, lm.y)
+            elif dimensions == 3:
+                coords = (lm.x, lm.y, lm.z)
+            positions[feature].append(coords)
+            
+        return positions
+
+    def _video_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
+
+        body = {k: [] for k in self.mapping}
+        capture = cv2.VideoCapture(input_data)
+        if not capture.isOpened():
+            print("Error opening video file.")
+            return None
+
+        # Inference looping over frames
+        frame_idx = 0
+        
+        # NOTE: CHECKING INFERENCE TIME 
+        start_time = time.time()
+        while capture.isOpened():
+
+            ret, frame = capture.read()
+            if not ret:
+                break  # End of video
+            
+            # Convert frame to mp.Image
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            
+            results = self.pose_landmarker.detect_for_video(mp_image, frame_idx)  # Use detect_for_video for tracking
+            
+            if results.pose_landmarks:
+                landmarks = results.pose_landmarks[0]
+                for feature in body:
+                    idx = self.mapping[feature]
+                    lm = landmarks[idx]
+                    if dimensions == 2:
+                        coords = (lm.x, lm.y)
+                    elif dimensions == 3:
+                        coords = (lm.x, lm.y, lm.z)
+                    body[feature].append(coords)
+            frame_idx += 1
+        
+        capture.release()
+        cv2.destroyAllWindows()
+
+        inference_duration = time.time()-start_time
+        print(f"Processed {frame_idx+1} frames - took {inference_duration:.2f} seconds.")
+        return body
+
+    def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True):
+        # processing image
+        if self.mode == RunningMode.IMAGE:
+            positions = self._image_inference(input_data, dimensions, visualize)
+        elif self.mode == RunningMode.VIDEO:
+            self.body = self._video_inference(input_data, dimensions, visualize)
+
+        body = Body(positions=positions, N_frames=1)
+
+        print(body.UpperArmRight)
+
+        img = cv2.imread(input_data)
+        h, w = img.shape[:2]
+        p1 = (int(body.UpperArmRight[0][0][0]*w), int(body.UpperArmRight[0][0][1]*h))
+        print(p1)
+        p2 = (int(body.UpperArmRight[0][1][0]*w), int(body.UpperArmRight[0][1][1]*h))
+        cv2.line(img, p1, p2, (0,255,0), 2)
+        cv2.imshow("Line", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 
+if __name__ == "__main__":
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-mp_image = mp.Image.create_from_file(IMAGE_PATH)
-
-
-
-with :
-    result = landmarker.detect(mp_image)
-
-if not result.pose_landmarks:
-    print("No pose detected.")
-    exit()
-
-# Load image for drawing
-image = cv2.imread(IMAGE_PATH)
-h, w = image.shape[:2]
-
-landmarks = result.pose_landmarks[0]
-
-# Draw points
-for i, lm in enumerate(landmarks):
-    x_px = int(lm.x * w)
-    y_px = int(lm.y * h)
-    cv2.circle(image, (x_px, y_px), 5, (0, 0, 255), -1)
-    cv2.putText(image, str(i), (x_px + 5, y_px - 5),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+    MODE = "image"
+    SAMPLE_IMAGE_PATH = os.path.join(BASE_DIR, "data", "images", "treadmill_test_img.PNG")
+    SAMPLE_VIDEO_PATH = os.path.join(BASE_DIR, "data", "videos", "treadmill_test_vid.MOV")
+    
+    model = POSE(mode = MODE)
+    if MODE == "image":
+        model(SAMPLE_IMAGE_PATH)
+    elif MODE == "video":
+        model(SAMPLE_VIDEO_PATH)

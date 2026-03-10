@@ -1,2 +1,2 @@
-# running_analysis
-CV running analysis draft repo
+# BodyScan
+CV body analysis draft repo

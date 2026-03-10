@@ -68,7 +68,7 @@ class KineticBody(object):
 
     def _initialize_bodyparts(self):
         # Initialize limb dictionaries
-        self._upper_arm = {}
+        
         self._upper_leg = {}
         self._lower_leg = {}
         self._torso = {}
@@ -81,6 +81,7 @@ class KineticBody(object):
         # > Bilateral body parts()
         for side in ["RIGHT", "LEFT"]:
             # Upper Arm
+            self._upper_arm = {}
             self._upper_arm[side] = get_vector(
                 f"{side}_SHOULDER", 
                 f"{side}_ELBOW", 
@@ -89,6 +90,7 @@ class KineticBody(object):
             )
         
             # Forearm
+            self._forearm = {}
             self._forearm[side] = get_vector(
                 f"{side}_ELBOW", 
                 f"{side}_WRIST", 
@@ -97,6 +99,7 @@ class KineticBody(object):
             )
 
             # Upper Leg (Hip to Knee)
+            self._upper_leg = {}
             self._upper_leg[side] = get_vector(
                 f"{side}_HIP", 
                 f"{side}_KNEE", 
@@ -105,6 +108,7 @@ class KineticBody(object):
             )
         
             # Lower Leg (Knee to Ankle)
+            self._lower_leg = {}
             self._lower_leg[side] = get_vector(
                 f"{side}_KNEE", 
                 f"{side}_ANKLE", 
@@ -113,12 +117,41 @@ class KineticBody(object):
             )
         
             # Torso (Shoulder to Hip)
+            self._torso = {}
             self._torso[side] = get_vector(
                 f"{side}_SHOULDER", 
                 f"{side}_HIP", 
                 self.positions, 
                 N_frames
             )
+
+
+            # ----- HAND ------
+            # Thumb
+            self._thumb = {}
+            self._thumb[side] = get_vector(
+                f"{side}_WRIST",
+                f"{side}_THUMB",
+                self.positions,
+                N_frames
+            )
+            # Index 
+            self._index = {}
+            self._index[side] = get_vector(
+                f"{side}_WRIST",
+                f"{side}_INDEX",
+                self.positions,
+                N_frames
+            )
+            #Pinky
+            self._pinky = {}
+            self._pinky[side] = get_vector(
+                f"{side}_WRIST",
+                f"{side}_pinky",
+                self.positions,
+                N_frames
+            )
+
 
         # > Unilateral body parts
         # Upper back (left to right shoulder)
@@ -334,6 +367,30 @@ class KineticBody(object):
         return self._torso["LEFT"]
 
     @property
+    def ThumbLeft(self):
+        return self._thumb["LEFT"]
+    
+    @property
+    def ThumbRight(self):
+        return self._thumb["RIGHT"]
+
+    @property
+    def IndexLeft(self):
+        return self._index["LEFT"]
+    
+    @property
+    def IndexRight(self):
+        return self._index["RIGHT"]
+
+    @property
+    def PinkyLeft(self):
+        return self._pinky["LEFT"]
+    
+    @property
+    def PinkyRight(self):
+        return self._pinky["RIGHT"]
+
+    @property
     def UpperBack(self):
         return self._upper_back
 
@@ -341,9 +398,6 @@ class KineticBody(object):
     def Hip(self):
         return self._hip
 
-
-
-    
 
     
 

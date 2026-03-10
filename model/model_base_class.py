@@ -8,7 +8,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from utils.common import read_json
 import time
-from body import Body
+from model.body import KineticBody
+
+
+def convert_coords_to_cv2(p1, p2, img_width, img_height):
+    pass
 
 
 class ModelBaseClass(ABC):
@@ -20,7 +24,7 @@ class ModelBaseClass(ABC):
         """Run inference on `input_data`; subclasses must override."""
         raise NotImplementedError
 
-    def __call__(self, input_data):
+    def __call__(self, input_data) -> KineticBody:
         return self._inference(input_data)
 
 #########################################################################################################################
@@ -54,11 +58,6 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         # coordinate storer 
         self.body = None
 
-    def _visualize_body(self, image: np.ndarray, text="Body"):
-        h, w = image.shape[:2]
-        cv2.imshow(text, image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
     def _image_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
         positions = {k: [] for k in self.mapping}
@@ -82,7 +81,7 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
 
     def _video_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
 
-        body = {k: [] for k in self.mapping}
+        positions = {k: [] for k in self.mapping}
         capture = cv2.VideoCapture(input_data)
         if not capture.isOpened():
             print("Error opening video file.")
@@ -92,7 +91,6 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         frame_idx = 0
         
         # NOTE: CHECKING INFERENCE TIME 
-        start_time = time.time()
         while capture.isOpened():
 
             ret, frame = capture.read()
@@ -106,7 +104,7 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
             
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks[0]
-                for feature in body:
+                for feature in positions:
                     idx = self.mapping[feature]
                     lm = landmarks[idx]
                     if dimensions == 2:
@@ -119,32 +117,24 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         capture.release()
         cv2.destroyAllWindows()
 
-        inference_duration = time.time()-start_time
-        print(f"Processed {frame_idx+1} frames - took {inference_duration:.2f} seconds.")
-        return body
+        
+        return positions
 
-    def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True):
+    def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True) -> KineticBody:
+
+        
         # processing image
+        start_time = time.time()
         if self.mode == RunningMode.IMAGE:
             positions = self._image_inference(input_data, dimensions, visualize)
         elif self.mode == RunningMode.VIDEO:
             self.body = self._video_inference(input_data, dimensions, visualize)
 
-        body = Body(positions=positions, N_frames=1)
+        inference_duration = time.time()-start_time
+        print(f"Inference time: {inference_duration:.2f} seconds.")
+        body = KineticBody(positions=positions, N_frames=1)
 
-        print(body.UpperArmRight)
-
-        img = cv2.imread(input_data)
-        h, w = img.shape[:2]
-        p1 = (int(body.UpperArmRight[0][0][0]*w), int(body.UpperArmRight[0][0][1]*h))
-        print(p1)
-        p2 = (int(body.UpperArmRight[0][1][0]*w), int(body.UpperArmRight[0][1][1]*h))
-        cv2.line(img, p1, p2, (0,255,0), 2)
-        cv2.imshow("Line", img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-
-
+        return body
 
 if __name__ == "__main__":
 
@@ -154,6 +144,6 @@ if __name__ == "__main__":
     
     model = POSE(mode = MODE)
     if MODE == "image":
-        model(SAMPLE_IMAGE_PATH)
+        body = model(SAMPLE_IMAGE_PATH)
     elif MODE == "video":
-        model(SAMPLE_VIDEO_PATH)
+        body = model(SAMPLE_VIDEO_PATH)

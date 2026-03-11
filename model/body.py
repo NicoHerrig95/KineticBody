@@ -147,7 +147,7 @@ class KineticBody(object):
             self._pinky = {}
             self._pinky[side] = get_vector(
                 f"{side}_WRIST",
-                f"{side}_pinky",
+                f"{side}_PINKY",
                 self.positions,
                 N_frames
             )

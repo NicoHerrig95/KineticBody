@@ -64,24 +64,27 @@ class KineticBody(object):
         self.N_frames = N_frames
         # initialising body parts
         self._initialize_bodyparts()
-        
 
     def _initialize_bodyparts(self):
         # Initialize limb dictionaries
-        
+        self._upper_arm = {}
         self._upper_leg = {}
         self._lower_leg = {}
         self._torso = {}
         self._upper_back = {}
         self._hip = {}
         self._forearm = {}
+        self._thumb = {}
+        self._index = {}
+        self._pinky = {}
+        self._foot = {}
+        self._heel = {}
         N_frames = self.N_frames
 
 
         # > Bilateral body parts()
         for side in ["RIGHT", "LEFT"]:
             # Upper Arm
-            self._upper_arm = {}
             self._upper_arm[side] = get_vector(
                 f"{side}_SHOULDER", 
                 f"{side}_ELBOW", 
@@ -90,7 +93,6 @@ class KineticBody(object):
             )
         
             # Forearm
-            self._forearm = {}
             self._forearm[side] = get_vector(
                 f"{side}_ELBOW", 
                 f"{side}_WRIST", 
@@ -99,7 +101,6 @@ class KineticBody(object):
             )
 
             # Upper Leg (Hip to Knee)
-            self._upper_leg = {}
             self._upper_leg[side] = get_vector(
                 f"{side}_HIP", 
                 f"{side}_KNEE", 
@@ -108,7 +109,6 @@ class KineticBody(object):
             )
         
             # Lower Leg (Knee to Ankle)
-            self._lower_leg = {}
             self._lower_leg[side] = get_vector(
                 f"{side}_KNEE", 
                 f"{side}_ANKLE", 
@@ -117,7 +117,6 @@ class KineticBody(object):
             )
         
             # Torso (Shoulder to Hip)
-            self._torso = {}
             self._torso[side] = get_vector(
                 f"{side}_SHOULDER", 
                 f"{side}_HIP", 
@@ -128,7 +127,6 @@ class KineticBody(object):
 
             # ----- HAND ------
             # Thumb
-            self._thumb = {}
             self._thumb[side] = get_vector(
                 f"{side}_WRIST",
                 f"{side}_THUMB",
@@ -136,7 +134,6 @@ class KineticBody(object):
                 N_frames
             )
             # Index 
-            self._index = {}
             self._index[side] = get_vector(
                 f"{side}_WRIST",
                 f"{side}_INDEX",
@@ -144,10 +141,26 @@ class KineticBody(object):
                 N_frames
             )
             #Pinky
-            self._pinky = {}
             self._pinky[side] = get_vector(
                 f"{side}_WRIST",
                 f"{side}_PINKY",
+                self.positions,
+                N_frames
+            )
+
+            # ----- FOOT ------
+            # Heel
+            self._heel[side] = get_vector(
+                f"{side}_ANKLE",
+                f"{side}_HEEL",
+                self.positions,
+                N_frames
+            )
+
+            # Foot (Heel to Foot Index)
+            self._foot[side] = get_vector(
+                f"{side}_HEEL",
+                f"{side}_FOOT_INDEX",
                 self.positions,
                 N_frames
             )
@@ -318,6 +331,139 @@ class KineticBody(object):
 
         cv2.fillPoly(image, [pts], color=BODY_COLOR) # RED
 
+        #####################################################
+        # Hand Features
+        #####################################################
+        # Thumbs
+        p1 = get_pixel_coordinates(
+            coordinates=self.ThumbLeft[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.ThumbLeft[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        p1 = get_pixel_coordinates(
+            coordinates=self.ThumbRight[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.ThumbRight[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        # Indexes
+        p1 = get_pixel_coordinates(
+            coordinates=self.IndexLeft[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.IndexLeft[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        p1 = get_pixel_coordinates(
+            coordinates=self.IndexRight[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.IndexRight[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        # Pinkies
+        p1 = get_pixel_coordinates(
+            coordinates=self.PinkyLeft[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.PinkyLeft[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        p1 = get_pixel_coordinates(
+            coordinates=self.PinkyRight[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.PinkyRight[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 10)  # Green
+
+        #####################################################
+        # Feet
+        #####################################################
+        # Left Heel
+        p1 = get_pixel_coordinates(
+            coordinates=self.HeelLeft[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.HeelLeft[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 15)  # Green
+
+        # Right Foot
+        p1 = get_pixel_coordinates(
+            coordinates=self.HeelRight[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.HeelRight[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 15)  # Green
+
+        # Left Foot
+        p1 = get_pixel_coordinates(
+            coordinates=self.FootLeft[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.FootLeft[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 15)  # Green
+
+        # Right Foot
+        p1 = get_pixel_coordinates(
+            coordinates=self.FootRight[0][0],
+            w=w,
+            h=h
+        )
+        p2 = get_pixel_coordinates(
+            coordinates=self.FootRight[0][1],
+            w=w,
+            h=h
+        )
+        cv2.line(image, p1, p2, BODY_COLOR, 15)  # Green
+
         cv2.imshow("Kinetic Body", image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
@@ -398,8 +544,23 @@ class KineticBody(object):
     def Hip(self):
         return self._hip
 
+    @property
+    def HeelLeft(self):
+        return self._heel["LEFT"]
 
-    
+    @property
+    def HeelRight(self):
+        return self._heel["RIGHT"]
+
+
+    @property
+    def FootLeft(self):
+        return self._foot["LEFT"]
+
+    @property
+    def FootRight(self):
+        return self._foot["RIGHT"]
+
 
 if __name__ == "__main__":
     pass

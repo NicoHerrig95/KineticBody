@@ -99,7 +99,6 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
             
             # Convert frame to mp.Image
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            
             results = self.pose_landmarker.detect_for_video(mp_image, frame_idx)  # Use detect_for_video for tracking
             
             if results.pose_landmarks:
@@ -117,7 +116,6 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         capture.release()
         cv2.destroyAllWindows()
 
-        
         return positions
 
     def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True) -> KineticBody:
@@ -128,8 +126,10 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         if self.mode == RunningMode.IMAGE:
             positions = self._image_inference(input_data, dimensions, visualize)
         elif self.mode == RunningMode.VIDEO:
-            self.body = self._video_inference(input_data, dimensions, visualize)
+            positions = self._video_inference(input_data, dimensions, visualize)
 
+        
+        print(positions)
         inference_duration = time.time()-start_time
         print(f"Inference time: {inference_duration:.2f} seconds.")
         body = KineticBody(positions=positions, N_frames=1)

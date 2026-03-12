@@ -17,11 +17,75 @@ def get_pixel_coordinates(coordinates:tuple, w:int, h:int) -> tuple:
     y = coordinates[1]
     return (int(x * w), int(y * h))
 
+
+
+
+####################################################################
+# Drawing functions
+# > in-place manipulation of arrays
+####################################################################
+
 def draw_limb(frame:np.ndarray, coords:tuple, thickness:int, color:tuple):
     h, w = frame.shape[:2]
     p1 = get_pixel_coordinates(coords[0], w, h)
     p2 = get_pixel_coordinates(coords[1], w, h)
     cv2.line(frame, p1, p2, color, thickness)
+
+
+def draw_torso(
+        frame:np.ndarray,
+        left_shoulder:tuple,
+        right_shoulder:tuple,
+        left_hip:tuple,
+        right_hip:tuple
+    ):
+    h, w = frame.shape[:2]
+    # Transforming normalized coordinates to pixel coordinares
+    left_shoulder = get_pixel_coordinates(left_shoulder, w, h),
+    right_shoulder = get_pixel_coordinates(right_shoulder, w, h),
+    left_hip = get_pixel_coordinates(left_hip, w, h),
+    right_hip = get_pixel_coordinates(right_hip, w, h),
+    torso_pts = np.array([left_shoulder, right_shoulder, right_hip, left_hip], dtype=np.int32)
+    cv2.fillPoly(frame, [torso_pts], BODY_COLOR)
+
+
+
+def visualize_skeletton(
+        body:KineticBody,
+        skeletton:list,
+        frame:np.ndarray,
+        frame_idx:int
+    ):
+    """  
+    Manipulating array by adding limbs etc.
+    """
+
+    # Draw all limbs
+    for limb_name in skeletton:
+        config = LIMBS_CONFIG[limb_name]
+        coords = getattr(body, limb_name)[frame_idx]
+        draw_limb(frame, coords, config["thickness"], config["color"])
+
+    # Draw torso as polygon
+    draw_torso(
+        frame=frame,
+        left_shoulder = body.UpperBack[frame_idx][0],
+        right_shoulder = body.UpperBack[frame_idx][1],
+        left_hip = body.Hip[frame_idx][0],
+        right_hip = body.Hip[frame_idx][1],
+    )
+
+    return frame
+
+
+
+
+
+
+
+
+
+
 
 
 # VARS
@@ -63,10 +127,9 @@ LIMBS_CONFIG = {
     "FootRight": {"thickness": 15, "color": BODY_COLOR},
     "FootLeft": {"thickness": 15, "color": BODY_COLOR},
 }
-
-
-
 skeletton_default = list(LIMBS_CONFIG.keys())
+
+
 
 def visualize_image(
         body: KineticBody, 
@@ -87,21 +150,12 @@ def visualize_image(
         image = np.zeros((800, 800, 3), dtype=np.uint8)
     h, w = image.shape[:2]
 
-
-    # Draw all limbs
-    for limb_name in skeletton:
-        config = LIMBS_CONFIG[limb_name]
-        coords = getattr(body, limb_name)[0]
-        draw_limb(image, coords, config["thickness"], config["color"])
-
-    # Draw torso as polygon
-    left_shoulder = get_pixel_coordinates(body.UpperBack[0][0], w, h)
-    right_shoulder = get_pixel_coordinates(body.UpperBack[0][1], w, h)
-    left_hip = get_pixel_coordinates(body.Hip[0][0], w, h)
-    right_hip = get_pixel_coordinates(body.Hip[0][1], w, h)
-
-    torso_pts = np.array([left_shoulder, right_shoulder, right_hip, left_hip], dtype=np.int32)
-    cv2.fillPoly(image, [torso_pts], BODY_COLOR)
+    image = visualize_skeletton(
+        body=body,
+        skeletton=skeletton,
+        frame=image,
+        frame_idx=0, # always 0 when single frame/image
+    )
 
     # Show image
     cv2.namedWindow("KineticBody", cv2.WINDOW_NORMAL)
@@ -115,6 +169,7 @@ def visualize_video(
         body: KineticBody, 
         capture: cv2.VideoCapture,
         skeletton:list = skeletton_default, # defines which body attributes shall be visualized
+        ms_between_frames:int = 10
     ):
 
     # Getting metadata
@@ -133,18 +188,16 @@ def visualize_video(
             if not ret:
                 break
             # > drawing logic here
-            # Draw all limbs
-            for limb_name in skeletton:
-                config = LIMBS_CONFIG[limb_name]
-                coords = getattr(body, limb_name)[idx]
-                draw_limb(frame, coords, config["thickness"], config["color"])
-                if limb_name == "FootLeft":
-                    print(coords)
-            # Torso TBC
+            visualize_skeletton(
+                body=body,
+                skeletton=skeletton,
+                frame=frame,
+                frame_idx=idx
+            )
             cv2.namedWindow("Kinetic Body", cv2.WINDOW_NORMAL)            
             cv2.imshow("Kinetic Body", frame)
             idx +=1 
-            if cv2.waitKey(10) & 0xFF == ord('q'):
+            if cv2.waitKey(ms_between_frames) & 0xFF == ord('q'):
                 break
         
         capture.release()

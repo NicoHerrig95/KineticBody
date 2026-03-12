@@ -8,8 +8,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from model.model_base_class import POSE
 
-VIDEO_PATH = "./data/videos/treadmill_test_img.PNG"
-IMAGE_PATH = "./data/images/treadmill_test_vid.MOV"
+IMAGE_PATH = "./data/images/treadmill_test_img.PNG"
+VIDEO_PATH = "./data/videos/treadmill_test_vid.MOV"
 MODEL_PATH = "pose_landmarker_lite.task"
 
 
@@ -18,9 +18,13 @@ if __name__ == "__main__":
     MODE = sys.argv[1]
     model = POSE(mode = MODE)
     if MODE == "image":
-        body = model(IMAGE_PATH)
-        body.visualize(background = cv2.imread(IMAGE_PATH))
+        body = model(IMAGE_PATH)        
+        body.save("positions_image.json")
+        # body.visualize(background = cv2.imread(IMAGE_PATH))
     elif MODE == "video":
         body = model(VIDEO_PATH)
-
+        # saving body 
+        body.save("positions_video.json")
+        print(body.UpperArmRight)
+    
     

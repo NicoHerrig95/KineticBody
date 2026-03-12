@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Tuple, Dict
 from abc import ABC, abstractmethod
 import numpy as np 
 import cv2
@@ -59,13 +60,22 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         self.body = None
 
 
-    def _image_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
+    def _image_inference(self, path:str, dimensions:int = 2, visualize:bool = True) -> Tuple[Dict, Dict]:
+
         positions = {k: [] for k in self.mapping}
-        x = mp.Image.create_from_file(input_data)
+        x = mp.Image.create_from_file(path)
         results = self.pose_landmarker.detect(x)
         if not results.pose_landmarks:
             print("No pose detected.")
             return None
+        
+
+        metadata = {
+            "mode" : "image",
+            "frame_count" : 1,
+            "width" : x.width,
+            "height" : x.height
+            }
 
         landmarks = results.pose_landmarks[0]  # Access the first pose
         for feature in positions:
@@ -76,21 +86,28 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
             elif dimensions == 3:
                 coords = (lm.x, lm.y, lm.z)
             positions[feature].append(coords)
-            
-        return positions
+        return positions, metadata
 
-    def _video_inference(self, input_data:str, dimensions:int = 2, visualize:bool = True):
+    def _video_inference(self, path:str, dimensions:int = 2, visualize:bool = True) -> Tuple[Dict, Dict]:
 
         positions = {k: [] for k in self.mapping}
-        capture = cv2.VideoCapture(input_data)
+        capture = cv2.VideoCapture(path)
         if not capture.isOpened():
             print("Error opening video file.")
             return None
+        
+
+        # Setting video metadata
+        metadata = {
+            "mode" : "video",
+            "frame_count" : int(capture.get(cv2.CAP_PROP_FRAME_COUNT)),
+            "width" : int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
+            "height" : int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+            "fps" : capture.get(cv2.CAP_PROP_FPS)
+            }
 
         # Inference looping over frames
         frame_idx = 0
-        
-        # NOTE: CHECKING INFERENCE TIME 
         while capture.isOpened():
 
             ret, frame = capture.read()
@@ -99,8 +116,9 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
             
             # Convert frame to mp.Image
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            # Inference on frame
             results = self.pose_landmarker.detect_for_video(mp_image, frame_idx)  # Use detect_for_video for tracking
-            
+            # Extracting per-bodypart coordinates from results
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks[0]
                 for feature in positions:
@@ -110,13 +128,12 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
                         coords = (lm.x, lm.y)
                     elif dimensions == 3:
                         coords = (lm.x, lm.y, lm.z)
-                    body[feature].append(coords)
+                    positions[feature].append(coords)
             frame_idx += 1
         
         capture.release()
         cv2.destroyAllWindows()
-
-        return positions
+        return positions, metadata
 
     def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True) -> KineticBody:
 
@@ -124,15 +141,16 @@ class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
         # processing image
         start_time = time.time()
         if self.mode == RunningMode.IMAGE:
-            positions = self._image_inference(input_data, dimensions, visualize)
+            positions, metadata = self._image_inference(input_data, dimensions, visualize)
         elif self.mode == RunningMode.VIDEO:
-            positions = self._video_inference(input_data, dimensions, visualize)
+            positions, metadata = self._video_inference(input_data, dimensions, visualize)
 
-        
-        print(positions)
         inference_duration = time.time()-start_time
         print(f"Inference time: {inference_duration:.2f} seconds.")
-        body = KineticBody(positions=positions, N_frames=1)
+        body = KineticBody(
+            positions=positions, 
+            metadata=metadata
+            )
 
         return body
 

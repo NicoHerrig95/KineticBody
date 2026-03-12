@@ -6,15 +6,9 @@ import numpy as np
 import cv2
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
-from utils.common import read_json
+from utils.common import read_json, save_dict_to_json
 import time
 import cv2
-
-
-
-
-
-
 
 
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
@@ -44,10 +38,6 @@ def get_pixel_coordinates(coordinates:tuple, w:int, h:int) -> tuple:
     return (int(x * w), int(y * h))
 
 
-
-
-
-
 class KineticBody(object):
     """  
     Kinetic model of human body
@@ -56,12 +46,14 @@ class KineticBody(object):
     def __init__(
         self,
         positions: dict, # positions dictionary 
-        N_frames: int, # 
+        metadata: dict,  
         ):
 
-
+        # unpacking metadata
+        self.meta = metadata
+        self.N_frames = metadata["frame_count"]
+        self.mode = metadata["mode"]
         self.positions = positions
-        self.N_frames = N_frames
         # initialising body parts
         self._initialize_bodyparts()
 
@@ -464,9 +456,18 @@ class KineticBody(object):
         )
         cv2.line(image, p1, p2, BODY_COLOR, 15)  # Green
 
-        cv2.imshow("Kinetic Body", image)
+        cv2.namedWindow("KineticBody", cv2.WINDOW_NORMAL)
+        cv2.imshow("KineticBody", image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
+
+
+    def save(self, output_path:str) -> None:
+        save_dict_to_json(
+            dict_obj={"positions" : self.positions,
+                      "meta" : self.meta},
+                      save_to_path=output_path
+        )
 
 
     ############################################################## 

@@ -13,23 +13,42 @@ import time
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
 
-# NOTE: These are fixed numbers but they should be proportional to width and height
-LIMB_THICKNESS = {
-    "UPPER_ARM" : 20,
-    "FOREARM" : 20,
-    "UPPER_LEG": 40,
-    "LOWER_LEG" : 30
-}
-BODY_COLOR = (0, 255, 0) # GREEN
-
-
-
 def get_vector(lm_a, lm_b, positions, N:int) -> list:
     """ 
     Gets a vector from positions by definition of two landmark keys. 
     """
     return [(positions[lm_a][i], positions[lm_b][i]) for i in range(N)]
 
+
+class Joints:
+    def __init__(self, positions: dict):
+        # Arms
+        self.ElbowLeft = positions["LEFT_ELBOW"]
+        self.ElbowRight = positions["RIGHT_ELBOW"]
+        self.WristLeft = positions["LEFT_WRIST"]
+        self.WristRight = positions["RIGHT_WRIST"]
+        self.PinkyLeft = positions["LEFT_PINKY"]
+        self.PinkyRight = positions["RIGHT_PINKY"]
+        self.IndexLeft = positions["LEFT_INDEX"]
+        self.IndexRight = positions["RIGHT_INDEX"]
+        self.ThumbLeft = positions["LEFT_THUMB"]
+        self.ThumbRight = positions["RIGHT_THUMB"]
+
+        # Torso / Hips
+        self.HipLeft = positions["LEFT_HIP"]
+        self.HipRight = positions["RIGHT_HIP"]
+        self.ShoulderLeft = positions["LEFT_SHOULDER"]
+        self.ShoulderRight = positions["RIGHT_SHOULDER"]
+
+        # Legs
+        self.KneeLeft = positions["LEFT_KNEE"]
+        self.KneeRight = positions["RIGHT_KNEE"]
+        self.AnkleLeft = positions["LEFT_ANKLE"]
+        self.AnkleRight = positions["RIGHT_ANKLE"]
+        self.HeelLeft = positions["LEFT_HEEL"]
+        self.HeelRight = positions["RIGHT_HEEL"]
+        self.FootIndexLeft = positions["LEFT_FOOT_INDEX"]
+        self.FootIndexRight = positions["RIGHT_FOOT_INDEX"]
 
 
 
@@ -49,9 +68,13 @@ class KineticBody(object):
         self.meta = metadata
         self.N_frames = metadata["frame_count"]
         self.mode = metadata["mode"]
-        self.positions = positions
+        self.positions = positions # position of joints from Pose Estimation
+        # Setting joints
+        self.joints = Joints(positions)
         # initialising body parts
         self._initialize_bodyparts()
+
+
 
     def _initialize_bodyparts(self):
         # Initialize limb dictionaries

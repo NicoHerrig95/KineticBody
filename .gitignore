@@ -1,9 +1,10 @@
 ### CUSTOM ###
 .venv/
-./data/images/mpii_human_pose/
+data/real_time_exercise_recognition/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*/__pycache__
 *.py[codz]
 *$py.class
 

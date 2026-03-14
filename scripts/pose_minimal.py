@@ -8,7 +8,7 @@ import numpy as np
 from utils.common import read_json
 from model.pose_estimation import PoseEstimator
 from model.body import KineticBody
-from model.visualization import visualize_video
+from model.visualization import visualize_video, visualize_image
 
 IMAGE_PATH = "./data/images/treadmill_test_img.PNG"
 VIDEO_PATH = "./data/videos/treadmill_test_vid.MOV"
@@ -23,7 +23,10 @@ if __name__ == "__main__":
     if MODE == "image":
         body = model(IMAGE_PATH)        
         body.save("positions_image.json")
-        body.visualize(background = cv2.imread(IMAGE_PATH))
+        visualize_image(
+            body = body,
+            background=cv2.imread(IMAGE_PATH)
+        )
     elif MODE == "video":
         # body = model(VIDEO_PATH)
         # # saving body 

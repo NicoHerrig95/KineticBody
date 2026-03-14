@@ -37,7 +37,7 @@ PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
 # path (use BASE_DIR for absolute paths)
-MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_lite.task")
+MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_heavy.task")
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
 class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass

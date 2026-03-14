@@ -225,17 +225,24 @@ def visualize_video(
         body: KineticBody, 
         capture: cv2.VideoCapture,
         skeletton:list = skeletton_default, # defines which body attributes shall be visualized
-        ms_between_frames:int = 10
+        joints:list = joints_default, # defines which joints shall be highlighted
+        unilaterals:list = unilaterals_default,
+        ms_between_frames:int = 30
     ):
+
 
     # Getting metadata
     mode = body.meta["mode"] # string
+    fps = body.meta["fps"]
+    width = body.meta["width"]
+    height = body.meta["height"]
+    writer = cv2.VideoWriter(
+        "kinetic_body_output.mp4",
+        cv2.VideoWriter_fourcc(*"mp4v"),
+        fps,
+        (width, height)
+    )
 
-
-    if mode == "video":
-        fps = body.meta["fps"]
-    else:
-        raise ValueError(f"body.meta.mode should be video but is {mode}")
     
     if isinstance(capture, cv2.VideoCapture):
         idx = 0
@@ -247,16 +254,18 @@ def visualize_video(
             visualize_skeletton(
                 body=body,
                 skeletton=skeletton,
+                joints=joints,
+                unilaterals=unilaterals,
                 frame=frame,
                 frame_idx=idx
             )
-            cv2.namedWindow("Kinetic Body", cv2.WINDOW_NORMAL)            
-            cv2.imshow("Kinetic Body", frame)
+            writer.write(frame)
             idx +=1 
             if cv2.waitKey(ms_between_frames) & 0xFF == ord('q'):
                 break
         
         capture.release()
+        writer.release()
         cv2.destroyAllWindows()
 
 

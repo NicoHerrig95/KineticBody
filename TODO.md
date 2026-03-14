@@ -1,11 +1,15 @@
 
 # MVP
 ## Current
-- Adding Hands to visualization function
-- Adding Feet
-
+- Angle computation
+- Joint visulaisation
+- Refactoring 
 
 ## Open
-- video processing & visualization
-- Angle computation
+- Testing Model on data
+-  
 
+
+
+## DONE
+- video processing & visualization

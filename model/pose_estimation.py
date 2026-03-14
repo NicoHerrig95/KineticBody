@@ -40,7 +40,7 @@ RunningMode = mp.tasks.vision.RunningMode
 MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_lite.task")
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
-class POSE(ModelBaseClass):  # Inherit from ModelBaseClass
+class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
     def __init__(self, mode: str = "image"):
         super().__init__(mode)  # Fix: no self, pass mode
         self.mapping = LANDMARK_MAPPING

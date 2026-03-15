@@ -9,7 +9,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from utils.common import read_json
 import time
-from model.body import KineticBody
+from assets.body import KineticBody
 
 
 def convert_coords_to_cv2(p1, p2, img_width, img_height):

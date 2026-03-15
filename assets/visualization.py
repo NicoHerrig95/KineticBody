@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
-from model.body import KineticBody
+from assets.body import KineticBody
 from utils.common import read_yaml
 
 

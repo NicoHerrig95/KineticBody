@@ -224,6 +224,7 @@ def visualize_image(
 def visualize_video(
         body: KineticBody, 
         capture: cv2.VideoCapture,
+        out_path:str,
         skeletton:list = skeletton_default, # defines which body attributes shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
@@ -237,7 +238,7 @@ def visualize_video(
     width = body.meta["width"]
     height = body.meta["height"]
     writer = cv2.VideoWriter(
-        "kinetic_body_output.mp4",
+        out_path,
         cv2.VideoWriter_fourcc(*"mp4v"),
         fps,
         (width, height)

@@ -41,17 +41,26 @@ MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_heavy.task")
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
 class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
-    def __init__(self, mode: str = "image"):
-        super().__init__(mode)  # Fix: no self, pass mode
+    def __init__(self, modularity: str = "image", reduce_lag:bool = False):
+        super().__init__(mode=modularity)  # Fix: no self, pass mode
         self.mapping = LANDMARK_MAPPING
         # Declaring modularity
-        if mode == "image":
-            self.mode = RunningMode.IMAGE
-        elif mode == "video":
-            self.mode = RunningMode.VIDEO
+        if modularity == "image":
+            self.model_mode = RunningMode.IMAGE
+            # lag reduction is only applicable for video mode
+            self.reduce_lag = "not applicable"
+        elif modularity == "video":
+            # If running in performance mode on video modularity,
+            # model uses image mode, which decreases tracking delay
+            # but surpressing internal estimation smoothing.
+            self.reduce_lag = reduce_lag
+            if reduce_lag:
+                self.model_mode = RunningMode.IMAGE
+            elif not reduce_lag:
+                self.model_mode = RunningMode.VIDEO
         self.settings = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=MODEL_PATH),
-            running_mode=self.mode,
+            running_mode=self.model_mode,
             num_poses=1,
         )
         self.pose_landmarker = PoseLandmarker.create_from_options(self.settings)
@@ -60,7 +69,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
         self.body = None
 
 
-    def _image_inference(self, path:str, dimensions:int = 2, visualize:bool = True) -> Tuple[Dict, Dict]:
+    def _image_inference(self, path:str, dimensions:int = 2) -> Tuple[Dict, Dict]:
 
         positions = {k: [] for k in self.mapping}
         x = mp.Image.create_from_file(path)
@@ -88,7 +97,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             positions[feature].append(coords)
         return positions, metadata
 
-    def _video_inference(self, path:str, dimensions:int = 2, visualize:bool = True) -> Tuple[Dict, Dict]:
+    def _video_inference(self, path:str, dimensions:int = 2) -> Tuple[Dict, Dict]:
 
         positions = {k: [] for k in self.mapping}
         capture = cv2.VideoCapture(path)
@@ -115,9 +124,13 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                 break  # End of video
             
             # Convert frame to mp.Image
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            x = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
             # Inference on frame
-            results = self.pose_landmarker.detect_for_video(mp_image, frame_idx)  # Use detect_for_video for tracking
+            if self.reduce_lag:
+                # Using default image detection (without smoothing)
+                results = self.pose_landmarker.detect(x)
+            elif not self.reduce_lag:
+                results = self.pose_landmarker.detect_for_video(x, frame_idx)  # Use detect_for_video for tracking
             # Extracting per-bodypart coordinates from results
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks[0]
@@ -135,15 +148,15 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
         cv2.destroyAllWindows()
         return positions, metadata
 
-    def _inference(self, input_data: str, dimensions: int = 2, visualize: bool = True) -> KineticBody:
+    def _inference(self, input_data: str, dimensions: int = 2) -> KineticBody:
 
         
         # processing image
         start_time = time.time()
-        if self.mode == RunningMode.IMAGE:
-            positions, metadata = self._image_inference(input_data, dimensions, visualize)
-        elif self.mode == RunningMode.VIDEO:
-            positions, metadata = self._video_inference(input_data, dimensions, visualize)
+        if self.mode == "image":
+            positions, metadata = self._image_inference(input_data, dimensions)
+        elif self.mode == "video":
+            positions, metadata = self._video_inference(input_data, dimensions)
 
         inference_duration = time.time()-start_time
         print(f"Inference time: {inference_duration:.2f} seconds.")
@@ -154,14 +167,9 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
 
         return body
 
-if __name__ == "__main__":
 
-    MODE = "image"
-    SAMPLE_IMAGE_PATH = os.path.join(BASE_DIR, "data", "images", "treadmill_test_img.PNG")
-    SAMPLE_VIDEO_PATH = os.path.join(BASE_DIR, "data", "videos", "treadmill_test_vid.MOV")
-    
-    model = POSE(mode = MODE)
-    if MODE == "image":
-        body = model(SAMPLE_IMAGE_PATH)
-    elif MODE == "video":
-        body = model(SAMPLE_VIDEO_PATH)
+
+
+
+
+

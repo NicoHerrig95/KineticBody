@@ -6,7 +6,7 @@ import cv2
 import mediapipe as mp
 import numpy as np 
 from utils.common import read_json
-from model.pose_estimation import PoseEstimator
+from model.pose_estimation import PoseEstimator, PoseEstimatorVideoEnhancement
 from model.body import KineticBody
 from model.visualization import visualize_video, visualize_image
 
@@ -19,7 +19,7 @@ MODEL_PATH = "pose_landmarker_lite.task"
 if __name__ == "__main__":
     MODE = sys.argv[1]
 
-    model = PoseEstimator(mode = MODE)
+    model = PoseEstimatorVideoEnhancement(mode = MODE)
     if MODE == "image":
         body = model(IMAGE_PATH)        
         body.save("positions_image.json")

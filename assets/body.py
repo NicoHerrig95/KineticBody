@@ -1,3 +1,10 @@
+"""   
+KineticBody
+-> The KineticBody model gives information about coordinates of limbs and joints.
+"""
+
+
+
 import os
 import sys
 from typing import Optional
@@ -8,10 +15,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from utils.common import read_json, save_dict_to_json
 import time
-
-
 LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
 
+
+################################################################################
+# HELPERS
+################################################################################
 
 def get_vector(lm_a, lm_b, positions, N:int) -> list:
     """ 
@@ -20,7 +29,37 @@ def get_vector(lm_a, lm_b, positions, N:int) -> list:
     return [(positions[lm_a][i], positions[lm_b][i]) for i in range(N)]
 
 
+
+def get_angle(coord_a:tuple, coord_b:tuple, coord_c:tuple):
+    """
+    Computes angle from three coordinates (x,y).
+    NOTE: Returns the angle for lm_b!
+    """
+
+    a = np.array(coord_a)
+    b = np.array(coord_b)
+    c = np.array(coord_c)
+
+    ba = a - b
+    bc = c - b
+
+    cos_angle = np.dot(ba, bc) / (
+        np.linalg.norm(ba) * np.linalg.norm(bc)
+    )
+
+    angle = np.degrees(np.arccos(np.clip(cos_angle, -1.0, 1.0)))
+
+    return angle
+
+
+################################################################################
+# JOINT CLASS
+################################################################################
 class Joints:
+    """ 
+    Stores the body's joints' coordinates.
+    Directly derived from pose predictions.
+    """
     def __init__(self, positions: dict):
         # Arms
         self.ElbowLeft = positions["LEFT_ELBOW"]
@@ -51,7 +90,33 @@ class Joints:
         self.FootIndexRight = positions["RIGHT_FOOT_INDEX"]
 
 
+################################################################################
+# ANGLE CLASS
+################################################################################
 
+class Angles:
+    def __init__(self, positions:dict, N_frames):
+        
+        self.KneeRight = [get_angle(
+            coord_a = positions["RIGHT_HIP"][i],
+            coord_b = positions["RIGHT_KNEE"][i],
+            coord_c = positions["RIGHT_ANKLE"][i]
+        ) for i in range(N_frames)]
+
+        self.KneeLeft = [get_angle(
+            coord_a = positions["LEFT_HIP"][i],
+            coord_b = positions["LEFT_KNEE"][i],
+            coord_c = positions["LEFT_ANKLE"][i]
+        ) for i in range(N_frames)]
+         
+
+
+
+
+
+################################################################################
+# MAIN CLASS (KINETIC BODY)
+################################################################################
 
 class KineticBody(object):
     """  
@@ -71,6 +136,8 @@ class KineticBody(object):
         self.positions = positions # position of joints from Pose Estimation
         # Setting joints
         self.joints = Joints(positions)
+        # Computing angles
+        self.angles = Angles(positions, self.N_frames)
         # initialising body parts
         self._initialize_bodyparts()
 

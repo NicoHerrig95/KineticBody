@@ -50,10 +50,14 @@ JOINTS_CONFIG = {
 }
 
 
+ANGLES_CONFIG = {
+    "Knee" : {}
+}
 
 skeletton_default = list(LIMBS_CONFIG.keys())
 joints_default = list(JOINTS_CONFIG.keys())
 unilaterals_default = list(UNILATERALS_CONFIG.keys())
+angles_default = list(ANGLES_CONFIG.keys())
 
 ####################################################################
 # Helper functions 
@@ -127,11 +131,36 @@ def draw_torso(
     cv2.fillPoly(frame, [torso_pts], BODY_COLOR)
 
 
+
+def draw_angle(
+        frame:np.ndarray, 
+        value:float, # angle value 
+        org:tuple, # bottom left coordinate of the text
+        text:Optional[str] = ""
+        ):
+
+    h, w = frame.shape[:2]
+    text = f"{text}{int(value)} deg."
+    org = get_pixel_coordinates(org, w, h)
+    cv2.putText(
+        frame,
+        text,
+        org,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255,255,255),
+        2
+    )
+
+
+
+
 def visualize_skeletton(
         body:KineticBody,
         skeletton:list,
         joints:list,
         unilaterals:list,
+        angles:list,
         frame:np.ndarray,
         frame_idx:int
     ):
@@ -168,6 +197,18 @@ def visualize_skeletton(
                 config["color"]
             )
 
+    # Draw angles
+    for joint_angle in angles:
+        for side in ["Left", "Right"]:
+            attr_name = f"{joint_angle}{side}"
+            org = getattr(body.joints, attr_name)[frame_idx]
+            value = getattr(body.angles, attr_name)[frame_idx]
+            draw_angle(
+                frame = frame,
+                value=value,
+                org=org
+            )
+
 
 
 
@@ -188,6 +229,7 @@ def visualize_image(
         skeletton:list = skeletton_default, # defines which limbs shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
+        angles:list = angles_default,
         background: Optional[np.ndarray] = None
         ):
     """ Visualize a KineticBody on a given background (image) or black canvas. """
@@ -209,6 +251,7 @@ def visualize_image(
         skeletton=skeletton,
         joints=joints,
         unilaterals=unilaterals,
+        angles=angles,
         frame=image,
         frame_idx=0, # always 0 when single frame/image
     )
@@ -228,6 +271,7 @@ def visualize_video(
         skeletton:list = skeletton_default, # defines which body attributes shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
+        angles:list=angles_default,
         ms_between_frames:int = 30
     ):
 
@@ -257,6 +301,7 @@ def visualize_video(
                 skeletton=skeletton,
                 joints=joints,
                 unilaterals=unilaterals,
+                angles=angles,
                 frame=frame,
                 frame_idx=idx
             )

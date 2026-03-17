@@ -173,13 +173,13 @@ def visualize_skeletton(
         for side in ["Left", "Right"]:
             config = LIMBS_CONFIG[limb_name]
             attr_name = f"{limb_name}{side}"
-            coords = getattr(body, attr_name)[frame_idx]
+            coords = getattr(body.limbs, attr_name)[frame_idx]
             draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
     # Draw Unilaterals
     for uni_name in unilaterals:
         config = UNILATERALS_CONFIG[uni_name]
-        coords = getattr(body, uni_name)[frame_idx]
+        coords = getattr(body.limbs, uni_name)[frame_idx]
         draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
 

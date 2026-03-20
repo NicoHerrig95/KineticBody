@@ -11,7 +11,7 @@ import time
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from utils.common import read_json, save_dict_to_json
-from assets.body import KineticBody
+from kinetics.body import KineticBody
 
 
 

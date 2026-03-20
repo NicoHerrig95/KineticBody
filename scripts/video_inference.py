@@ -7,7 +7,7 @@ import mediapipe as mp
 import numpy as np 
 from utils.common import read_json
 from model.pose_estimation import PoseEstimator
-from assets.body import KineticBody
+from kinetics.body import KineticBody
 from assets.visualization import visualize_video, visualize_image
 
 

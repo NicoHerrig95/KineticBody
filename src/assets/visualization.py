@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
-from assets.body import KineticBody
+from kinetics.body import KineticBody
 from utils.common import read_yaml
 
 
@@ -19,6 +19,9 @@ BODY_COLOR = tuple(config["body_color"])
 JOINT_COLOR = tuple(config["joint_color"])
 
 
+###############################################################
+# Visualisation Config 
+###############################################################
 # Define config for each limb
 LIMBS_CONFIG = {
     # Bilateral Limbs
@@ -51,7 +54,8 @@ JOINTS_CONFIG = {
 
 
 ANGLES_CONFIG = {
-    "Knee" : {}
+    "Knee" : {},
+    "Elbow" : {}
 }
 
 skeletton_default = list(LIMBS_CONFIG.keys())
@@ -268,7 +272,7 @@ def visualize_video(
         body: KineticBody, 
         capture: cv2.VideoCapture,
         out_path:str,
-        skeletton:list = skeletton_default, # defines which body attributes shall be visualized
+        skeletton:list = skeletton_default, # defines which limbs shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
         angles:list=angles_default,

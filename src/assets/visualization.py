@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
-from assets.body import KineticBody
+from kinetics.body import KineticBody
 from utils.common import read_yaml
 
 
@@ -19,6 +19,9 @@ BODY_COLOR = tuple(config["body_color"])
 JOINT_COLOR = tuple(config["joint_color"])
 
 
+###############################################################
+# Visualisation Config 
+###############################################################
 # Define config for each limb
 LIMBS_CONFIG = {
     # Bilateral Limbs
@@ -50,10 +53,15 @@ JOINTS_CONFIG = {
 }
 
 
+ANGLES_CONFIG = {
+    "Knee" : {},
+    "Elbow" : {}
+}
 
 skeletton_default = list(LIMBS_CONFIG.keys())
 joints_default = list(JOINTS_CONFIG.keys())
 unilaterals_default = list(UNILATERALS_CONFIG.keys())
+angles_default = list(ANGLES_CONFIG.keys())
 
 ####################################################################
 # Helper functions 
@@ -127,11 +135,36 @@ def draw_torso(
     cv2.fillPoly(frame, [torso_pts], BODY_COLOR)
 
 
+
+def draw_angle(
+        frame:np.ndarray, 
+        value:float, # angle value 
+        org:tuple, # bottom left coordinate of the text
+        text:Optional[str] = ""
+        ):
+
+    h, w = frame.shape[:2]
+    text = f"{text}{int(value)} deg."
+    org = get_pixel_coordinates(org, w, h)
+    cv2.putText(
+        frame,
+        text,
+        org,
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (255,255,255),
+        2
+    )
+
+
+
+
 def visualize_skeletton(
         body:KineticBody,
         skeletton:list,
         joints:list,
         unilaterals:list,
+        angles:list,
         frame:np.ndarray,
         frame_idx:int
     ):
@@ -144,13 +177,13 @@ def visualize_skeletton(
         for side in ["Left", "Right"]:
             config = LIMBS_CONFIG[limb_name]
             attr_name = f"{limb_name}{side}"
-            coords = getattr(body, attr_name)[frame_idx]
+            coords = getattr(body.limbs, attr_name)[frame_idx]
             draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
     # Draw Unilaterals
     for uni_name in unilaterals:
         config = UNILATERALS_CONFIG[uni_name]
-        coords = getattr(body, uni_name)[frame_idx]
+        coords = getattr(body.limbs, uni_name)[frame_idx]
         draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
 
@@ -166,6 +199,18 @@ def visualize_skeletton(
                 config["joint_radius_scaler"], 
                 config["thickness_scaler"], 
                 config["color"]
+            )
+
+    # Draw angles
+    for joint_angle in angles:
+        for side in ["Left", "Right"]:
+            attr_name = f"{joint_angle}{side}"
+            org = getattr(body.joints, attr_name)[frame_idx]
+            value = getattr(body.angles, attr_name)[frame_idx]
+            draw_angle(
+                frame = frame,
+                value=value,
+                org=org
             )
 
 
@@ -188,6 +233,7 @@ def visualize_image(
         skeletton:list = skeletton_default, # defines which limbs shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
+        angles:list = angles_default,
         background: Optional[np.ndarray] = None
         ):
     """ Visualize a KineticBody on a given background (image) or black canvas. """
@@ -209,6 +255,7 @@ def visualize_image(
         skeletton=skeletton,
         joints=joints,
         unilaterals=unilaterals,
+        angles=angles,
         frame=image,
         frame_idx=0, # always 0 when single frame/image
     )
@@ -225,9 +272,10 @@ def visualize_video(
         body: KineticBody, 
         capture: cv2.VideoCapture,
         out_path:str,
-        skeletton:list = skeletton_default, # defines which body attributes shall be visualized
+        skeletton:list = skeletton_default, # defines which limbs shall be visualized
         joints:list = joints_default, # defines which joints shall be highlighted
         unilaterals:list = unilaterals_default,
+        angles:list=angles_default,
         ms_between_frames:int = 30
     ):
 
@@ -257,6 +305,7 @@ def visualize_video(
                 skeletton=skeletton,
                 joints=joints,
                 unilaterals=unilaterals,
+                angles=angles,
                 frame=frame,
                 frame_idx=idx
             )

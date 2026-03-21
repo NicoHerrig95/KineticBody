@@ -7,14 +7,14 @@ import mediapipe as mp
 import numpy as np 
 from utils.common import read_json
 from model.pose_estimation import PoseEstimator
-from assets.body import KineticBody
+from kinetics.body import KineticBody
 from assets.visualization import visualize_video, visualize_image
 
 
 # Default parameters
 LAG_REDUCTION = True
 VIDEO_PATH = "./data/real_time_exercise_recognition/3/final_kaggle_with_additional_video/barbell biceps curl/barbell biceps curl_3.mp4"
-
+V2 = "./data/real_time_exercise_recognition/3/similar_dataset/squat/1e2c254b-0d5a-4fd6-a6d4-2681333d927b.mp4"
 
 def video_inference(
         input_path:str,
@@ -38,20 +38,11 @@ def video_inference(
     )
 
 
-
-
 if __name__ == "__main__":
     
     # sample
     video_inference(
-        input_path=VIDEO_PATH,
-        out_path="./example_lag_reduction.mp4",
+        input_path=V2 ,
+        out_path="./example_squat.mp4",
         reduce_lag=True
     )
-
-
-    video_inference(
-        input_path=VIDEO_PATH,
-        out_path="./example_no_lag_reduction.mp4",
-        reduce_lag=False
-        )

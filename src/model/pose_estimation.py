@@ -1,15 +1,19 @@
 import os
 import sys
+from dotenv import load_dotenv
 from typing import Tuple, Dict
 from abc import ABC, abstractmethod
 import numpy as np 
 import cv2
 import mediapipe as mp
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BASE_DIR)
 from utils.common import read_json
 import time
-from assets.body import KineticBody
+from kinetics.body import KineticBody
+
+# Load .env file
+load_dotenv()
+LANDMARK_MAPPING = read_json(os.getenv("POSE_LANDMARK_MAPPING_PATH"))
+MODEL_PATH = os.getenv("POSE_MODEL_PATH")
 
 
 def convert_coords_to_cv2(p1, p2, img_width, img_height):
@@ -37,8 +41,7 @@ PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
 # path (use BASE_DIR for absolute paths)
-MODEL_PATH = os.path.join(BASE_DIR, "pose_landmarker_heavy.task")
-LANDMARK_MAPPING = read_json(os.path.join(BASE_DIR, "POSE_landmark_mapping.json"))
+
 
 class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
     def __init__(self, modularity: str = "image", reduce_lag:bool = False):

@@ -5,10 +5,6 @@ from scipy.signal import savgol_filter
 
 
 
-
-
-SAVGOL_DEFA
-
 class SavGol(object):
 
     def __init__(self, 
@@ -18,7 +14,7 @@ class SavGol(object):
         self.window_size = window_size
         self.polyorder
 
-        
+
     def __call__(self, positions:dict):
         smoothed_positions = {}
         for lm in positions:

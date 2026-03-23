@@ -1,7 +1,7 @@
 import os
 import sys
 from dotenv import load_dotenv
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 from abc import ABC, abstractmethod
 import numpy as np 
 import cv2
@@ -9,6 +9,7 @@ import mediapipe as mp
 from utils.common import read_json
 import time
 from kinetics.body import KineticBody
+from model.proc.filtering import SavGol
 
 # Load .env file
 load_dotenv()
@@ -44,14 +45,21 @@ RunningMode = mp.tasks.vision.RunningMode
 
 
 class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
-    def __init__(self, modularity: str = "image", reduce_lag:bool = False):
-        super().__init__(mode=modularity)  # Fix: no self, pass mode
+    def __init__(
+            self, 
+            modularity: str = "image", 
+            reduce_lag:bool = True,
+            filter:Optional[object] = None
+            ):
+        super().__init__(mode=modularity)  
         self.mapping = LANDMARK_MAPPING
+
         # Declaring modularity
         if modularity == "image":
             self.model_mode = RunningMode.IMAGE
             # lag reduction is only applicable for video mode
             self.reduce_lag = "not applicable"
+            self.filter = None # not applicable for image
         elif modularity == "video":
             # If running in performance mode on video modularity,
             # model uses image mode, which decreases tracking delay
@@ -61,6 +69,8 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                 self.model_mode = RunningMode.IMAGE
             elif not reduce_lag:
                 self.model_mode = RunningMode.VIDEO
+            self.filter = filter
+
         self.settings = PoseLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=MODEL_PATH),
             running_mode=self.model_mode,
@@ -162,6 +172,11 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             positions, metadata = self._video_inference(input_data, dimensions)
 
         inference_duration = time.time()-start_time
+        # Apply filtering if applicable
+        if self.filter is not None:
+            positions = self.filter(positions)
+
+        
         print(f"Inference time: {inference_duration:.2f} seconds.")
         body = KineticBody(
             positions=positions, 

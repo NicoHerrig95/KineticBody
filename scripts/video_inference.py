@@ -9,7 +9,7 @@ from utils.common import read_json
 from model.pose_estimation import PoseEstimator
 from kinetics.body import KineticBody
 from assets.visualization import visualize_video, visualize_image
-
+from src.model.proc.filtering import SavGol
 
 # Default parameters
 LAG_REDUCTION = True
@@ -20,13 +20,15 @@ def video_inference(
         input_path:str,
         out_path:str,
         reduce_lag:bool,
+        filter:None
         ):
     if not out_path.endswith(".mp4"):
         raise ValueError("Output must be of format .mp4")
     
     model = PoseEstimator(
         modularity="video",
-        reduce_lag=reduce_lag
+        reduce_lag=reduce_lag,
+        filter=filter
         )
     # inference
     body = model(input_path)
@@ -40,9 +42,10 @@ def video_inference(
 
 if __name__ == "__main__":
     
-    # sample
+    # minimal sample
     video_inference(
         input_path=V2 ,
-        out_path="./example_squat.mp4",
-        reduce_lag=True
+        out_path="./example_squat_savgol.mp4",
+        reduce_lag=True,
+        filter=SavGol()
     )

@@ -146,15 +146,34 @@ def draw_angle(
     h, w = frame.shape[:2]
     text = f"{text}{int(value)} deg."
     org = get_pixel_coordinates(org, w, h)
+    text_position = (org[0] + 10, org[1] + 10)
     cv2.putText(
         frame,
         text,
-        org,
+        text_position,
         cv2.FONT_HERSHEY_SIMPLEX,
         0.6,
         (255,255,255),
         2
     )
+
+    # Draw arc
+    # --- Draw arc ---
+    radius = 40
+    start_angle = 0
+    end_angle = int(value)
+
+    cv2.ellipse(
+        frame,
+        org,              # center of arc
+        (radius, radius),    # axes (circle → same values)
+        0,                   # rotation
+        start_angle,         # start angle
+        end_angle,           # end angle
+        (0, 255, 0),         # color (green)
+        2                    # thickness
+    )
+
 
 
 
@@ -206,6 +225,8 @@ def visualize_skeletton(
         for side in ["Left", "Right"]:
             attr_name = f"{joint_angle}{side}"
             org = getattr(body.joints, attr_name)[frame_idx]
+
+
             value = getattr(body.angles, attr_name)[frame_idx]
             draw_angle(
                 frame = frame,

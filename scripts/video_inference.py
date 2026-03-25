@@ -11,6 +11,9 @@ from kinetics.body import KineticBody
 from assets.visualization import visualize_video, visualize_image
 from src.model.proc.filtering import SavGol
 
+
+from src.movements.squat.side_view import KneeBelow90Degrees
+
 # Default parameters
 LAG_REDUCTION = True
 VIDEO_PATH = "./data/real_time_exercise_recognition/3/final_kaggle_with_additional_video/barbell biceps curl/barbell biceps curl_3.mp4"
@@ -22,7 +25,7 @@ def video_inference(
         reduce_lag:bool,
         filter:None
         ):
-    if not out_path.endswith(".mp4"):
+    if out_path is not None and not out_path.endswith(".mp4"):
         raise ValueError("Output must be of format .mp4")
     
     model = PoseEstimator(
@@ -33,11 +36,20 @@ def video_inference(
     # inference
     body = model(input_path)
     # Adds video visuals and saves video
-    visualize_video(
-        body = body,
-        capture= cv2.VideoCapture(input_path),
-        out_path=out_path
-    )
+    if out_path is not None:
+        visualize_video(
+            body = body,
+            capture= cv2.VideoCapture(input_path),
+            out_path=out_path
+        )
+    # NOTE: TESTING
+    elif out_path is None:
+        # applying rule
+        r1 = KneeBelow90Degrees(body)
+        xx = r1()
+        print(xx)
+
+        
 
 
 if __name__ == "__main__":
@@ -45,7 +57,7 @@ if __name__ == "__main__":
     # minimal sample
     video_inference(
         input_path=V2 ,
-        out_path="./example_squat_savgol.mp4",
+        out_path=None,
         reduce_lag=True,
-        filter=SavGol()
+        filter=SavGol(),
     )

@@ -47,6 +47,7 @@ class KineticBody(object):
         self.N_frames = metadata["frame_count"]
         self.mode = metadata["mode"]
         self.positions = positions # position of joints from Pose Estimation
+
         # Setting joints
         self.joints = Joints(positions)
         #Setting Limbs

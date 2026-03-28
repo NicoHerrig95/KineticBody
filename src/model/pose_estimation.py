@@ -119,17 +119,10 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             return None
         
 
-        # Setting video metadata
-        metadata = {
-            "mode" : "video",
-            "frame_count" : int(capture.get(cv2.CAP_PROP_FRAME_COUNT)),
-            "width" : int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            "height" : int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-            "fps" : capture.get(cv2.CAP_PROP_FPS)
-            }
+
 
         # Inference looping over frames
-        frame_idx = 0
+        frame_count = 0
         while capture.isOpened():
 
             ret, frame = capture.read()
@@ -143,7 +136,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                 # Using default image detection (without smoothing)
                 results = self.pose_landmarker.detect(x)
             elif not self.reduce_lag:
-                results = self.pose_landmarker.detect_for_video(x, frame_idx)  # Use detect_for_video for tracking
+                results = self.pose_landmarker.detect_for_video(x, frame_count)  # Use detect_for_video for tracking
             # Extracting per-bodypart coordinates from results
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks[0]
@@ -155,10 +148,20 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                     elif dimensions == 3:
                         coords = (lm.x, lm.y, lm.z)
                     positions[feature].append(coords)
-            frame_idx += 1
-        
+            frame_count += 1
+
+                
         capture.release()
         cv2.destroyAllWindows()
+
+        # Setting video metadata
+        metadata = {
+            "mode" : "video",
+            "frame_count" : frame_count,
+            "width" : int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
+            "height" : int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
+            "fps" : capture.get(cv2.CAP_PROP_FPS)
+            }
         return positions, metadata
 
     def _inference(self, input_data: str, dimensions: int = 2) -> KineticBody:
@@ -178,6 +181,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
 
         
         print(f"Inference time: {inference_duration:.2f} seconds.")
+
         body = KineticBody(
             positions=positions, 
             metadata=metadata

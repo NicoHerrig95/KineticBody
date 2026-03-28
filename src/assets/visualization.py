@@ -157,22 +157,7 @@ def draw_angle(
         2
     )
 
-    # Draw arc
-    # --- Draw arc ---
-    radius = 40
-    start_angle = 0
-    end_angle = int(value)
 
-    cv2.ellipse(
-        frame,
-        org,              # center of arc
-        (radius, radius),    # axes (circle → same values)
-        0,                   # rotation
-        start_angle,         # start angle
-        end_angle,           # end angle
-        (0, 255, 0),         # color (green)
-        2                    # thickness
-    )
 
 
 

@@ -29,7 +29,8 @@ class Angles(Bodypart):
         N_frames = self.N_frames
         BILATERAL_ANGLES = {
             "Knee" : ("HIP", "KNEE", "ANKLE"),
-            "Elbow" : ("SHOULDER", "ELBOW", "WRIST")
+            "Elbow" : ("SHOULDER", "ELBOW", "WRIST"),
+            "Hip" : ("SHOULDER", "HIP", "KNEE")
             }
 
         for side in ["RIGHT", "LEFT"]:
@@ -39,4 +40,4 @@ class Angles(Bodypart):
                     coord_a = self.positions[f"{side}_{start}"][i],
                     coord_b = self.positions[f"{side}_{center}"][i],
                     coord_c = self.positions[f"{side}_{end}"][i]
-                ) for i in range(self.N_frames)]
+                ) for i in range(N_frames)]

@@ -29,7 +29,8 @@ class Angles(Bodypart):
         N_frames = self.N_frames
         BILATERAL_ANGLES = {
             "Knee" : ("HIP", "KNEE", "ANKLE"),
-            "Elbow" : ("SHOULDER", "ELBOW", "WRIST")
+            "Elbow" : ("SHOULDER", "ELBOW", "WRIST"),
+            "Hip" : ("SHOULDER", "HIP", "KNEE")
             }
 
         for side in ["RIGHT", "LEFT"]:

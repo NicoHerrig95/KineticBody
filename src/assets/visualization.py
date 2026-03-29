@@ -19,6 +19,31 @@ BODY_COLOR = tuple(config["body_color"])
 JOINT_COLOR = tuple(config["joint_color"])
 
 
+
+# HELPERS
+def make_writer(path, fps, width, height):
+    candidates = [
+        ("mp4v", path),                        # .mp4
+        ("MJPG", path.replace(".mp4", ".avi")),# .avi
+        ("XVID", path.replace(".mp4", ".avi")),# .avi
+    ]
+
+    for codec, out in candidates:
+        writer = cv2.VideoWriter(
+            out,
+            cv2.VideoWriter_fourcc(*codec),
+            fps,
+            (width, height),
+        )
+        if writer.isOpened():
+            print(f"Using codec={codec}, output={out}")
+            return writer, out
+
+    raise RuntimeError("Could not open VideoWriter with mp4v, MJPG, or XVID.")
+
+
+
+
 ###############################################################
 # Visualisation Config 
 ###############################################################
@@ -55,7 +80,8 @@ JOINTS_CONFIG = {
 
 ANGLES_CONFIG = {
     "Knee" : {},
-    "Elbow" : {}
+    "Elbow" : {},
+    "Hip" : {}
 }
 
 skeletton_default = list(LIMBS_CONFIG.keys())
@@ -152,7 +178,7 @@ def draw_angle(
         text,
         text_position,
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
+        2,
         (255,255,255),
         2
     )
@@ -275,54 +301,55 @@ def visualize_image(
 
 
 def visualize_video(
-        body: KineticBody, 
-        capture: cv2.VideoCapture,
-        out_path:str,
-        skeletton:list = skeletton_default, # defines which limbs shall be visualized
-        joints:list = joints_default, # defines which joints shall be highlighted
-        unilaterals:list = unilaterals_default,
-        angles:list=angles_default,
-        ms_between_frames:int = 30
-    ):
+    body,
+    capture,
+    out_path,
+    skeletton=skeletton_default,
+    joints=joints_default,
+    unilaterals=unilaterals_default,
+    angles=angles_default,
+    ms_between_frames=30,
+):
+    fps = capture.get(cv2.CAP_PROP_FPS)
+    width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
+    if not isinstance(capture, cv2.VideoCapture):
+        raise TypeError("capture must be a cv2.VideoCapture")
 
-    # Getting metadata
-    mode = body.meta["mode"] # string
-    fps = body.meta["fps"]
-    width = body.meta["width"]
-    height = body.meta["height"]
-    writer = cv2.VideoWriter(
-        out_path,
-        cv2.VideoWriter_fourcc(*"mp4v"),
-        fps,
-        (width, height)
+    # Instantiating writer
+    writer, out_path = make_writer(
+        path=out_path,
+        fps =fps,
+        width=width,
+        height=height
     )
 
-    
-    if isinstance(capture, cv2.VideoCapture):
-        idx = 0
-        while capture.isOpened():
-            ret, frame = capture.read()
-            if not ret:
-                break
-            # > drawing logic here
-            visualize_skeletton(
-                body=body,
-                skeletton=skeletton,
-                joints=joints,
-                unilaterals=unilaterals,
-                angles=angles,
-                frame=frame,
-                frame_idx=idx
-            )
-            writer.write(frame)
-            idx +=1 
-            if cv2.waitKey(ms_between_frames) & 0xFF == ord('q'):
-                break
-        
+    # Sanity check
+    if not writer.isOpened():
         capture.release()
-        writer.release()
-        cv2.destroyAllWindows()
+        raise RuntimeError("VideoWriter failed to open. Codec may be unavailable.")
 
+    idx = 0
+    while True:
+        ret, frame = capture.read()
+        if not ret:
+            break
+        # Visualising skeletton (joints, limbs, angles etc.) on frame
+        # NOTE: Visualisation is done in-place within function, so no object is returned!
+        visualize_skeletton(
+            body=body,
+            skeletton=skeletton,
+            joints=joints,
+            unilaterals=unilaterals,
+            angles=angles,
+            frame=frame,
+            frame_idx=idx,
+        )
 
-
+        writer.write(frame)
+        idx += 1
+    # Releasing caputre, writer and destoying cv2 windows
+    capture.release()
+    writer.release()
+    cv2.destroyAllWindows()

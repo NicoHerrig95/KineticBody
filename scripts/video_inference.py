@@ -29,10 +29,10 @@ def video_inference(
     if out_path is not None and not out_path.endswith(".mp4"):
         raise ValueError("Output must be of format .mp4")
     
-    if input_path.endswith(".mov") or input_path.endswith(".MOV"):
-        mov_to_mp4(input_path)
-        # overwriting input path
-        input_path = os.path.splitext(input_path)[0] + ".mp4"
+    #if input_path.endswith(".mov") or input_path.endswith(".MOV"):
+    #    mov_to_mp4(input_path)
+    #    # overwriting input path
+    #    input_path = os.path.splitext(input_path)[0] + ".mp4"
 
 
 
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     
     # minimal sample
     video_inference(
-        input_path=V2 ,
+        input_path=V3 ,
         out_path="example3.mp4",
         reduce_lag=True,
         filter=SavGol(),

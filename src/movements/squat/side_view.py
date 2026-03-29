@@ -22,19 +22,28 @@ JOINT_SCALER = config["joint_radius_scale"]
 BODY_COLOR = tuple(config["body_color"])
 JOINT_COLOR = tuple(config["joint_color"])
 
+# Biomechanical Constraints
+MIN_ANGLE_KNEE = 90 # degrees
+MIN_ANGLE_HIP = 90
+
 
 
 # Rule 1
 # Going lower than 90 degrees on squat
 # If not reached, recommend increasing hip mobility
 
-class KneeBelow90Degrees(Rule):
+class KneeAngle(Rule):
 
     def __init__(self, 
                  body:KineticBody,
                  side = None
                  ):
+
+        """  
+        Checks knee angle compliance with given biomechanical constraints.
+        """
         super().__init__(body=body)
+        self.min_angle = int(MIN_ANGLE_KNEE)
         if side is not None and side not in ["Left", "Right"]:
             raise ValueError("Side must be either left or right")
         self.side = ["Left", "Right"] if side == None else [side]
@@ -49,7 +58,7 @@ class KneeBelow90Degrees(Rule):
         for side in sides:
             angles = getattr(self.body.angles, f"Knee{side}")
             # checks if knee angles are below 90 degrees
-            checkup = [(int(x) < 90) for x in angles]
+            checkup = [(int(x) < self.min_angle) for x in angles]
             result[side] = any(checkup) # checks if angle is below 90 at any point
         return result
     
@@ -57,13 +66,50 @@ class KneeBelow90Degrees(Rule):
         output = {"analysis" : [], "recommendation" : None}
         for side in self.side:
             if not result[side]:
-                output["analysis"].append(f"Through the movement, {side} knee angle is never below 90 degrees.")
+                output["analysis"].append(f"{side} knee angle is never below 90 degrees.")
         if len(output["analysis"]) > 0:
             output["recommendation"] = "Increasing hip mobility is recommended."
         return output
 
 
+class HipAngle(Rule):
 
+    def __init__(self, 
+                 body:KineticBody,
+                 side = None
+                 ):
+
+        """  
+        Checks knee angle compliance with given biomechanical constraints.
+        """
+        super().__init__(body=body)
+        self.min_angle = int(MIN_ANGLE_HIP)
+        if side is not None and side not in ["Left", "Right"]:
+            raise ValueError("Side must be either left or right")
+        self.side = ["Left", "Right"] if side == None else [side]
+
+
+    def check(self):
+        result = {}
+        if self.side is None:
+            sides = ["Left", "Right"]
+        else:
+            sides = self.side
+        for side in sides:
+            angles = getattr(self.body.angles, f"Hip{side}")
+            # checks if knee angles are below 90 degrees
+            checkup = [(int(x) < self.min_angle) for x in angles]
+            result[side] = any(checkup) # checks if angle is below 90 at any point
+        return result
+    
+    def get_recommendation(self, result):
+        output = {"analysis" : [], "recommendation" : None}
+        for side in self.side:
+            if not result[side]:
+                output["analysis"].append(f"{side} hip angle is never below 90 degrees.")
+        if len(output["analysis"]) > 0:
+            output["recommendation"] = "Increasing hip mobility is recommended."
+        return output
 
 
 

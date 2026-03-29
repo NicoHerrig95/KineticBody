@@ -67,7 +67,7 @@ class Bodypart(ABC):
         for side in ["Right", "Left"]:
             if name.endswith(side):
                 object_name = name[:-len(side)]
-                side_upper = side.upper()
+                side_upper = side.upper() 
                 if object_name in self._objects:
                     return self._objects[object_name][side_upper]
 

@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 from kinetics.bodyparts.angles import Angles
 from kinetics.bodyparts.joints import Joints
 from kinetics.bodyparts.limbs import Limbs
-
+from kinetics.bodyparts.head import Head
 
 # Load .env file
 load_dotenv()
@@ -50,6 +50,8 @@ class KineticBody(object):
 
         # Setting joints
         self.joints = Joints(positions)
+        # Setting head
+        self.head = Head(positions, self.N_frames)
         #Setting Limbs
         self.limbs = Limbs(positions, self.N_frames)
         # Computing angles

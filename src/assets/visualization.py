@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from kinetics.body import KineticBody
 from utils.common import read_yaml
-
+from pathlib import Path
 
 # Reading config 
 CONFIG_PATH = "./config/body.yaml"
@@ -22,6 +22,7 @@ JOINT_COLOR = tuple(config["joint_color"])
 
 # HELPERS
 def make_writer(path, fps, width, height):
+    print(path)
     candidates = [
         ("mp4v", path),                        # .mp4
         ("MJPG", path.replace(".mp4", ".avi")),# .avi
@@ -317,6 +318,11 @@ def visualize_video(
     if not isinstance(capture, cv2.VideoCapture):
         raise TypeError("capture must be a cv2.VideoCapture")
 
+    # default out_path is always .mp4 
+    out_path = Path(out_path)
+    if out_path.suffix != ".mp4":
+        out_path = out_path.with_suffix(".mp4")
+    out_path = str(out_path)
     # Instantiating writer
     writer, out_path = make_writer(
         path=out_path,
@@ -329,7 +335,7 @@ def visualize_video(
     if not writer.isOpened():
         capture.release()
         raise RuntimeError("VideoWriter failed to open. Codec may be unavailable.")
-
+    # Main Loop
     idx = 0
     while True:
         ret, frame = capture.read()

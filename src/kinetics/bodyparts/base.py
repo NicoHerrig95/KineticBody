@@ -14,9 +14,6 @@ def get_vector(lm_a, lm_b, positions, N:int) -> list:
     """ 
     Gets a vector from positions by definition of two landmark keys. 
     """
-    # print(N)
-    # print(len(positions[lm_a]))
-    # print(len(positions[lm_b]))
     return [(positions[lm_a][i], positions[lm_b][i]) for i in range(N)]
 
 

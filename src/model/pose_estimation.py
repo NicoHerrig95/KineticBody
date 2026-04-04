@@ -6,10 +6,11 @@ from abc import ABC, abstractmethod
 import numpy as np 
 import cv2
 import mediapipe as mp
-from utils.common import read_json
+from utils.common import read_json, save_dict_to_json
 import time
 from kinetics.body import KineticBody
 from model.proc.filtering import SavGol
+from model.proc.position_interpolation import linear_interpolation
 
 # Load .env file
 load_dotenv()
@@ -18,6 +19,9 @@ MODEL_PATH = os.getenv("POSE_MODEL_PATH")
 
 
 def convert_coords_to_cv2(p1, p2, img_width, img_height):
+    """ 
+    Converts coords with value range  [0,1] into cv2 format (value range defindes by pixels)
+    """
     pass
 
 
@@ -117,12 +121,10 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
         if not capture.isOpened():
             print("Error opening video file.")
             return None
-        
-
-
 
         # Inference looping over frames
         frame_count = 0
+        no_pose_count = 0
         while capture.isOpened():
 
             ret, frame = capture.read()
@@ -137,6 +139,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                 results = self.pose_landmarker.detect(x)
             elif not self.reduce_lag:
                 results = self.pose_landmarker.detect_for_video(x, frame_count)  # Use detect_for_video for tracking
+            
             # Extracting per-bodypart coordinates from results
             if results.pose_landmarks:
                 landmarks = results.pose_landmarks[0]
@@ -148,24 +151,34 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
                     elif dimensions == 3:
                         coords = (lm.x, lm.y, lm.z)
                     positions[feature].append(coords)
-            frame_count += 1
+            # if no pose is detected, append np.nan
+            elif not results.pose_landmarks:
+                no_pose_count += 1
+                for feature in positions:
+                    if dimensions == 2:
+                        positions[feature].append((np.nan, np.nan)) # x,y missing
+                    elif dimensions == 3:
+                        # positions[feature].append((None, None, None))
+                        positions[feature].append((np.nan, np.nan, np.nan)) # x,y,z missing
 
-                
+            # updating frame count
+            frame_count += 1                
+
         capture.release()
         cv2.destroyAllWindows()
 
-        # Setting video metadata
         metadata = {
             "mode" : "video",
-            "frame_count" : frame_count,
+            "frame_count" : frame_count, 
             "width" : int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)),
             "height" : int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-            "fps" : capture.get(cv2.CAP_PROP_FPS)
+            "fps" : capture.get(cv2.CAP_PROP_FPS),
+            "no_detection_count" : no_pose_count
             }
+
         return positions, metadata
 
     def _inference(self, input_data: str, dimensions: int = 2) -> KineticBody:
-
         
         # processing image
         start_time = time.time()
@@ -173,14 +186,30 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             positions, metadata = self._image_inference(input_data, dimensions)
         elif self.mode == "video":
             positions, metadata = self._video_inference(input_data, dimensions)
-
         inference_duration = time.time()-start_time
+
+        # Interpolating missing values in positions
+        if metadata["no_detection_count"] > 0:
+            for lm in positions:
+                x = [coords[0] for coords in positions[lm]]
+                y = [coords[1] for coords in positions[lm]]
+                corrected = []
+                x_corrected = linear_interpolation(x, window=2)
+                y_corrected = linear_interpolation(y, window=2)
+                if len(x_corrected) == len(y_corrected):
+                    frame_count = len(x_corrected) 
+                    positions[lm] = [
+                        [float(x_corrected[i]), float(y_corrected[i])] 
+                        for i in range(frame_count)
+                        ]
+
+
         # Apply filtering if applicable
         if self.filter is not None:
             positions = self.filter(positions)
-
         
         print(f"Inference time: {inference_duration:.2f} seconds.")
+        print(f"Frames with no pose detected: {metadata["no_detection_count"]}")
 
         body = KineticBody(
             positions=positions, 

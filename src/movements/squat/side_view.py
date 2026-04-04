@@ -27,6 +27,24 @@ MIN_ANGLE_KNEE = 90 # degrees
 MIN_ANGLE_HIP = 90
 
 
+ankle_constraints = {
+    "hip" : {
+        "half_squat": [50, 70],
+        "parallel_squat": [80, 100],
+        "deep_squat": [100, 120]
+        },
+    "knee" : {
+        "half_squat": [70, 100],
+        "parallel_squat": [90, 110],
+        "deep_squat": [110, 135]
+        }, 
+    "ankle" : {
+        "half_squat": [10, 20],
+        "parallel_squat": [20, 25],
+        "deep_squat": [25, 35]
+        }
+}
+
 
 # Rule 1
 # Going lower than 90 degrees on squat

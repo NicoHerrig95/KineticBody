@@ -5,7 +5,7 @@ sys.path.insert(0, BASE_DIR)
 import cv2
 import mediapipe as mp
 import numpy as np 
-from utils.common import read_json, mov_to_mp4
+from utils.common import read_json, mov_to_mp4, save_dict_to_json
 from model.pose_estimation import PoseEstimator
 from kinetics.body import KineticBody
 from assets.visualization import visualize_video, visualize_image
@@ -15,7 +15,7 @@ from pathlib import Path
 
 # Default parameters
 LAG_REDUCTION = True
-TEST_DIR = "./data/videos/test"
+TEST_DIR = "./data/videos/test/self_filming_gym"
 OUT_DIR = "./data/annotations/test"
 
 
@@ -30,9 +30,13 @@ if __name__ == "__main__":
     for p in tqdm(input_paths):
         out_path = Path(p)
         out_path = out_path.with_name(f"{out_path.stem}_annotated{out_path.suffix}")
+        file_name = out_path.stem
         out_path = str(out_path) # converting back to string
         print(p)
         body = model(p)
+        save_dict_to_json(body.positions, f"{file_name}_positions.json")
+        
+        
         visualize_video(
             body = body,
             capture=cv2.VideoCapture(p),

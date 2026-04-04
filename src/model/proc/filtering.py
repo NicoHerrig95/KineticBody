@@ -4,6 +4,13 @@ import numpy as np
 from scipy.signal import savgol_filter
 
 
+""" 
+Filtering
+"""
+
+
+
+
 
 class SavGol(object):
 

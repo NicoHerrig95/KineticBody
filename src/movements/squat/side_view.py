@@ -22,10 +22,6 @@ JOINT_SCALER = config["joint_radius_scale"]
 BODY_COLOR = tuple(config["body_color"])
 JOINT_COLOR = tuple(config["joint_color"])
 
-# Biomechanical Constraints
-MIN_ANGLE_KNEE = 90 # degrees
-MIN_ANGLE_HIP = 90
-
 
 ankle_constraints = {
     "hip" : {
@@ -128,8 +124,3 @@ class HipAngle(Rule):
         if len(output["analysis"]) > 0:
             output["recommendation"] = "Increasing hip mobility is recommended."
         return output
-
-
-
-
-

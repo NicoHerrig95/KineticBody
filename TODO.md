@@ -1,9 +1,9 @@
 
 # MVP
 ## Current
-- Refactoring 
-    - path declaration via .env
 - Movement Class
+- Rep Counter
+
 
 ## Open
 - Testing Model on data
@@ -16,3 +16,5 @@
 - video processing & visualization
 - Joint visulaisation
 - Angle Class
+- Refactoring 
+    - path declaration via .env

@@ -6,9 +6,7 @@
 
 
 ## Open
-- Testing Model on data
-    - Testing detection of Pose Model with e.g. COCO
-    - Test annotations on example dataset!
+
 
 
 
@@ -18,3 +16,5 @@
 - Angle Class
 - Refactoring 
     - path declaration via .env
+- Testing Model on data
+    - Testing detection on self-filmed squat movements

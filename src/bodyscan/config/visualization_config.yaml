@@ -1,0 +1,5 @@
+body:
+  thickness_scale: 1
+  joint_radius_scale: 3
+  body_color: [0, 255, 0]
+  joint_color: [0, 0, 255]

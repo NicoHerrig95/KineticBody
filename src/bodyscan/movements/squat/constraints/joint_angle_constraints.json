@@ -1,0 +1,56 @@
+{
+    "hip": {
+        "minimal_flexion": {
+            "angle": [180, 130],
+            "encoding": "red"
+        },
+        "moderate_flexion": {
+            "angle": [130, 110],
+            "encoding": "yellow"
+        },
+        "high_flexion": {
+            "angle": [100, 80],
+            "encoding": "green"
+        },
+        "very_high_flexion": {
+            "angle": [80, 0],
+            "encoding": "green"
+        }
+    },
+    "knee": {
+        "minimal_flexion": {
+            "angle": [180, 110],
+            "encoding": "red"
+        },
+        "moderate_flexion": {
+            "angle": [110, 100],
+            "encoding": "yellow"
+        },
+        "high_flexion": {
+            "angle": [90, 70],
+            "encoding": "green"
+        },
+        "very_high_flexion": {
+            "angle": [70, 0],
+            "encoding": "green"
+        }
+    },
+    "ankle": {
+        "minimal_flexion": {
+            "angle": [180, 90],
+            "encoding": "red"
+        },
+        "moderate_flexion": {
+            "angle": [90, 80],
+            "encoding": "yellow"
+        },
+        "high_flexion": {
+            "angle": [80, 65],
+            "encoding": "green"
+        },
+        "very_high_flexion": {
+            "angle": [65, 0],
+            "encoding": "green"
+        }
+    }
+}

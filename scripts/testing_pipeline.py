@@ -5,11 +5,11 @@ sys.path.insert(0, BASE_DIR)
 import cv2
 import mediapipe as mp
 import numpy as np 
-from utils.common import read_json, mov_to_mp4, save_dict_to_json
-from model.pose_estimation import PoseEstimator
-from kinetics.body import KineticBody
-from assets.visualization import visualize_video, visualize_image
-from src.model.proc.filtering import SavGol
+from bodyscan.utils.common import save_dict_to_json
+from bodyscan.model.pose_estimation import PoseEstimator
+from bodyscan.kinetics.body import KineticBody
+from bodyscan.assets.visualization import visualize_video, visualize_image
+from bodyscan.model.proc.filtering import SavGol
 from tqdm import tqdm
 from pathlib import Path
 from dotenv import load_dotenv
@@ -21,6 +21,7 @@ DATA_DIR_CLOUD = os.getenv("DATA_ON_CLOUD")
 LAG_REDUCTION = True
 TEST_DIR = os.path.join(DATA_DIR_CLOUD, "self_filmed_videos_squat")
 OUT_DIR = TEST_DIR 
+
 
 
 if __name__ == "__main__":

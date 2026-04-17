@@ -5,18 +5,21 @@ sys.path.insert(0, BASE_DIR)
 import cv2
 import mediapipe as mp
 import numpy as np 
-from utils.common import read_json, mov_to_mp4
-from model.pose_estimation import PoseEstimator
-from kinetics.body import KineticBody
-from assets.visualization import visualize_video, visualize_image
-from src.model.proc.filtering import SavGol
+from src.bodyscan.utils.common import read_json, mov_to_mp4
+from bodyscan.model.pose_estimation import PoseEstimator
+from bodyscan.kinetics.body import KineticBody
+from bodyscan.assets.visualization import visualize_video, visualize_image
+from bodyscan.model.proc.filtering import SavGol
+from bodyscan.utils.common import save_dict_to_json
+from dotenv import load_dotenv
+load_dotenv()
+
+DATA_DIR_CLOUD = os.getenv("DATA_ON_CLOUD")
 
 # Default parameters
 LAG_REDUCTION = True
-VIDEO_PATH = "./data/real_time_exercise_recognition/3/final_kaggle_with_additional_video/barbell biceps curl/barbell biceps curl_3.mp4"
-V2 = "./data/real_time_exercise_recognition/3/similar_dataset/squat/1e2c254b-0d5a-4fd6-a6d4-2681333d927b.mp4"
-V3 = "./data/videos/self_squat_example.mov"
-V4 = "./data/videos/test/squat_side_view_right.mov"
+# VIDEO_PATH = os.path.join(DATA_DIR_CLOUD, "self_filmed_videos_squat/side_view_less_clothes.mov")
+VIDEO_PATH = os.path.join(DATA_DIR_CLOUD, "angle_test.mov")
 
 def video_inference(
         input_path:str,
@@ -31,12 +34,14 @@ def video_inference(
     #    raise ValueError("Output must be of format .mp4")
     
     model = PoseEstimator(
-        modularity="video",
+        modality="video",
         reduce_lag=reduce_lag,
         filter=filter
         )
     # inference
     body = model(input_path)
+    save_dict_to_json(body.positions, "squat_side_view_positions.json")
+
     # Adds video visuals and saves video
     if out_path is not None:
         visualize_video(
@@ -55,8 +60,8 @@ if __name__ == "__main__":
     
     # minimal sample
     video_inference(
-        input_path=V3 ,
-        out_path="example4.mp4",
+        input_path=VIDEO_PATH ,
+        out_path="angle_test.mp4",
         reduce_lag=True,
         filter=SavGol(),
     )

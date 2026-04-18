@@ -2,6 +2,7 @@ import os
 import sys
 import cv2
 from tqdm import tqdm
+from bodyscan.utils.common import save_dict_to_json
 from bodyscan.model.proc.filtering import SavGol
 from bodyscan.model.pose_estimation import PoseEstimator
 from bodyscan.config.paths import TMP_DIR
@@ -107,10 +108,7 @@ def squat_analysis(
     return analysis_results, error_log
 
 
-
-
 if __name__ == "__main__":
-
 
     analysis_results, error_log = squat_analysis(
         rules = RULES,
@@ -119,5 +117,8 @@ if __name__ == "__main__":
         temp_dir=TMP_DIR/"testing",
         visualize=VISUALIZATION_KWARGS
     )
-
-    print(analysis_results)
+    save_dict_to_json(
+        analysis_results, 
+        TMP_DIR/"analysis_results.json"
+        )
+    print("-- Analysis successfully executed --")

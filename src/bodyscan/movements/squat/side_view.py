@@ -1,23 +1,12 @@
 import os
-import sys
-from typing import Optional
-from abc import ABC, abstractmethod
-import numpy as np 
-import cv2
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BASE_DIR)
 from bodyscan.kinetics.body import KineticBody
-from bodyscan.utils.common import read_yaml, read_json
+from bodyscan.utils.common import read_json
 from bodyscan.movements.rule import Rule
 from bodyscan.model.pose_estimation import PoseEstimator
 from bodyscan.model.proc.filtering import SavGol
 from bodyscan.utils.movement import check_joint_angle_range
 from dotenv import load_dotenv
 load_dotenv()
-
-
-
-
 
 
 """ 
@@ -89,6 +78,16 @@ class HipAngle(Rule):
 
         return result
     
+
+
+class HeadBalance(Rule):
+
+    def __init__(self, body:KineticBody):
+        super().__init__(body = body)
+
+    def check(self):
+        pass
+
 
 
 ##########################################################################

@@ -8,7 +8,7 @@ import numpy as np
 from bodyscan.utils.common import save_dict_to_json
 from bodyscan.model.pose_estimation import PoseEstimator
 from bodyscan.kinetics.body import KineticBody
-from bodyscan.assets.visualization import visualize_video, visualize_image
+from bodyscan.visualization.rendering import visualize_video, visualize_image
 from bodyscan.model.proc.filtering import SavGol
 from tqdm import tqdm
 from pathlib import Path

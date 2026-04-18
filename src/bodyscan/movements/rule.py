@@ -14,7 +14,7 @@ sys.path.insert(0, BASE_DIR)
 from bodyscan.utils.common import read_json, save_dict_to_json
 from bodyscan.kinetics.body import KineticBody
 from bodyscan.model.pose_estimation import PoseEstimator
-from bodyscan.assets.visualization import visualize_video
+from bodyscan.visualization.rendering import visualize_video
 
 
 """ 

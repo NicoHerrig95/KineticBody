@@ -1,6 +1,7 @@
 ### CUSTOM ###
 .venv/
 data/real_time_exercise_recognition/
+data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

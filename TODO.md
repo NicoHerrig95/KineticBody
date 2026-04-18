@@ -1,14 +1,12 @@
 
 # MVP
 ## Current
-- Refactoring 
-    - path declaration via .env
 - Movement Class
+- Rep Counter
+
 
 ## Open
-- Testing Model on data
-    - Testing detection of Pose Model with e.g. COCO
-    - Test annotations on example dataset!
+
 
 
 
@@ -16,3 +14,7 @@
 - video processing & visualization
 - Joint visulaisation
 - Angle Class
+- Refactoring 
+    - path declaration via .env
+- Testing Model on data
+    - Testing detection on self-filmed squat movements

@@ -1,0 +1,13 @@
+pose_estimator:
+  size: heavy
+  reduce_lag: True # only relevant for video inference
+  filter: True
+
+
+filter:
+  algo: SavGol
+  window_size: 9
+  polynomial_order: 2 
+
+
+

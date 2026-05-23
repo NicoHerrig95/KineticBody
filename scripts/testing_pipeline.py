@@ -5,11 +5,11 @@ sys.path.insert(0, BASE_DIR)
 import cv2
 import mediapipe as mp
 import numpy as np 
-from bodyscan.utils.common import save_dict_to_json
-from bodyscan.model.pose_estimation import PoseEstimator
-from bodyscan.kinetics.body import KineticBody
-from bodyscan.visualization.rendering import visualize_video, visualize_image
-from bodyscan.model.proc.filtering import SavGol
+from kineticbody.utils.common import save_dict_to_json
+from kineticbody.model.pose_estimation import PoseEstimator
+from kineticbody.kinetics.body import KineticBody
+from kineticbody.visualization.rendering import visualize_video, visualize_image
+from kineticbody.model.proc.filtering import SavGol
 from tqdm import tqdm
 from pathlib import Path
 from dotenv import load_dotenv

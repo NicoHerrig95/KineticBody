@@ -1,21 +1,16 @@
-import os
-import sys
-from typing import Optional
-from abc import ABC, abstractmethod
-import numpy as np 
-import cv2
-from bodyscan.utils.common import read_json, save_dict_to_json
-import time
-from bodyscan.kinetics.bodyparts.base import Bodypart, get_angle, get_vector
-from dotenv import load_dotenv
-# Load .env file
-load_dotenv()
-LANDMARK_MAPPING = read_json(os.getenv("POSE_LANDMARK_MAPPING_PATH"))
+from kineticbody.kinetics.bodyparts.base import Bodypart, get_angle
 
 
 ################################################################################
 # ANGLE CLASS
 ################################################################################
+
+BILATERAL_ANGLES = {
+    "Knee" : ("HIP", "KNEE", "ANKLE"),
+    "Elbow" : ("SHOULDER", "ELBOW", "WRIST"),
+    "Hip" : ("SHOULDER", "HIP", "KNEE")
+    }
+
 
 class Angles(Bodypart):
     def __init__(self, positions:dict, N_frames):
@@ -27,12 +22,6 @@ class Angles(Bodypart):
     def _initialize_bodypart(self):
 
         N_frames = self.N_frames
-        BILATERAL_ANGLES = {
-            "Knee" : ("HIP", "KNEE", "ANKLE"),
-            "Elbow" : ("SHOULDER", "ELBOW", "WRIST"),
-            "Hip" : ("SHOULDER", "HIP", "KNEE")
-            }
-
         for side in ["RIGHT", "LEFT"]:
             # Bilateral Angles
             for angle_name, (start, center, end) in BILATERAL_ANGLES.items():

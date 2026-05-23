@@ -1,21 +1,28 @@
-import os
-import sys
-from typing import Optional
-from abc import ABC, abstractmethod
-import numpy as np 
-import cv2
-from bodyscan.utils.common import read_json, save_dict_to_json
-import time
-from bodyscan.kinetics.bodyparts.base import Bodypart, get_angle, get_vector
-from dotenv import load_dotenv
-# Load .env file
-load_dotenv()
-LANDMARK_MAPPING = read_json(os.getenv("POSE_LANDMARK_MAPPING_PATH"))
-
+from kineticbody.kinetics.bodyparts.base import Bodypart, get_vector
 
 ################################################################################
 # LIMBS CLASS
 ################################################################################
+
+
+BILATERAL_LIMBS = {
+    "UpperArm": ("SHOULDER", "ELBOW"),
+    "Forearm": ("ELBOW", "WRIST"),
+    "UpperLeg": ("HIP", "KNEE"),
+    "LowerLeg": ("KNEE", "ANKLE"),
+    "Torso": ("SHOULDER", "HIP"),
+    "Thumb": ("WRIST", "THUMB"),
+    "Index": ("WRIST", "INDEX"),
+    "Pinky": ("WRIST", "PINKY"),
+    "Heel": ("ANKLE", "HEEL"),
+    "Foot": ("HEEL", "FOOT_INDEX")
+}
+
+UNILATERAL_LIMBS = {
+    "UpperBack" : ("LEFT_SHOULDER","RIGHT_SHOULDER"),
+    "Hip" : ("LEFT_HIP", "RIGHT_HIP")
+}
+
 
 class Limbs(Bodypart):
     def __init__(self, positions: dict, N_frames: int):
@@ -26,23 +33,7 @@ class Limbs(Bodypart):
 
     def _initialize_bodypart(self):
         N_frames = self.N_frames
-        BILATERAL_LIMBS = {
-            "UpperArm": ("SHOULDER", "ELBOW"),
-            "Forearm": ("ELBOW", "WRIST"),
-            "UpperLeg": ("HIP", "KNEE"),
-            "LowerLeg": ("KNEE", "ANKLE"),
-            "Torso": ("SHOULDER", "HIP"),
-            "Thumb": ("WRIST", "THUMB"),
-            "Index": ("WRIST", "INDEX"),
-            "Pinky": ("WRIST", "PINKY"),
-            "Heel": ("ANKLE", "HEEL"),
-            "Foot": ("HEEL", "FOOT_INDEX")
-        }
 
-        UNILATERAL_LIMBS = {
-            "UpperBack" : ("LEFT_SHOULDER","RIGHT_SHOULDER"),
-            "Hip" : ("LEFT_HIP", "RIGHT_HIP")
-        }
 
         for side in ["RIGHT", "LEFT"]:
             # Bilateral Limbs

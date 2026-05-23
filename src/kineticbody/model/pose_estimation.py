@@ -1,28 +1,65 @@
-import os
-import sys
-from dotenv import load_dotenv
 from typing import Tuple, Dict, Optional
 from abc import ABC, abstractmethod
 import numpy as np 
 import cv2
 import mediapipe as mp
-from bodyscan.utils.common import read_json, save_dict_to_json
+from kineticbody.utils.common import read_json
 import time
-from bodyscan.kinetics.body import KineticBody
-from bodyscan.model.proc.filtering import SavGol
-from bodyscan.model.proc.position_interpolation import linear_interpolation
-
-# Load .env file
-load_dotenv()
-LANDMARK_MAPPING = read_json(os.getenv("POSE_LANDMARK_MAPPING_PATH"))
-MODEL_PATH = os.getenv("POSE_MODEL_PATH")
-
+from kineticbody.kinetics.body import KineticBody
+from kineticbody.model.proc.position_interpolation import linear_interpolation
+from kineticbody.utils.common import read_json
+from kineticbody.config.paths import LANDMARK_MAPPING_PATH, POSE_TASK_FILE_DIR
+LANDMARK_MAPPING = read_json(LANDMARK_MAPPING_PATH)
 
 def convert_coords_to_cv2(p1, p2, img_width, img_height):
     """ 
     Converts coords with value range  [0,1] into cv2 format (value range defindes by pixels)
     """
     pass
+
+
+def load_pose_model(
+        size:str,
+        modality:str,
+        lag_reduction:bool
+        ):
+    
+    """ 
+    Loads POSE landmarker model.
+    """
+    modality_options = ["image", "video"]
+    model_size_options = ["lite", "heavy"]
+    if modality not in modality_options:
+        raise ValueError(f"Modality must be in {modality_options}")
+    if size not in model_size_options:
+        raise ValueError(f"Size must be in {model_size_options}")
+    
+
+    # Declaring modality
+    if modality == "image":
+        model_mode = RunningMode.IMAGE
+        # lag reduction is only applicable for video mode
+    elif modality == "video":
+        # If running in performance mode on video modality,
+        # model uses image mode, which decreases tracking delay
+        # but surpressing internal estimation smoothing.
+        if lag_reduction:
+            model_mode = RunningMode.IMAGE
+        elif not lag_reduction:
+            model_mode = RunningMode.VIDEO
+
+
+    # constructing model path
+    model_path = POSE_TASK_FILE_DIR / f"pose_landmarker_{size}.task"
+
+    settings = PoseLandmarkerOptions(
+        base_options=BaseOptions(model_asset_path=model_path),
+        running_mode=model_mode,
+        num_poses=1,
+    )
+
+
+    return PoseLandmarker.create_from_options(settings)
 
 
 class ModelBaseClass(ABC):
@@ -45,42 +82,29 @@ PoseLandmarker = mp.tasks.vision.PoseLandmarker
 PoseLandmarkerOptions = mp.tasks.vision.PoseLandmarkerOptions
 RunningMode = mp.tasks.vision.RunningMode
 
-# path (use BASE_DIR for absolute paths)
-
-
 class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
     def __init__(
             self, 
-            modality: str = "image", 
+            modality: str = "video", 
             reduce_lag:bool = True,
-            filter:Optional[object] = None
+            filter:Optional[object] = None,
+            size:str="heavy"
             ):
         super().__init__(mode=modality)  
         self.mapping = LANDMARK_MAPPING
-
-        # Declaring modality
+        self.filter = filter
+        # Variable setting if modality is image but video settings are provided
         if modality == "image":
-            self.model_mode = RunningMode.IMAGE
             # lag reduction is only applicable for video mode
             self.reduce_lag = "not applicable"
             self.filter = None # not applicable for image
-        elif modality == "video":
-            # If running in performance mode on video modality,
-            # model uses image mode, which decreases tracking delay
-            # but surpressing internal estimation smoothing.
-            self.reduce_lag = reduce_lag
-            if reduce_lag:
-                self.model_mode = RunningMode.IMAGE
-            elif not reduce_lag:
-                self.model_mode = RunningMode.VIDEO
-            self.filter = filter
 
-        self.settings = PoseLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path=MODEL_PATH),
-            running_mode=self.model_mode,
-            num_poses=1,
+        # loading model
+        self.pose_landmarker = load_pose_model(
+            size= size,
+            modality=modality,
+            lag_reduction=reduce_lag
         )
-        self.pose_landmarker = PoseLandmarker.create_from_options(self.settings)
 
         # coordinate storer 
         self.body = None
@@ -95,7 +119,6 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             print("No pose detected.")
             return None
         
-
         metadata = {
             "mode" : "image",
             "frame_count" : 1,

@@ -1,12 +1,10 @@
-import os
-import sys
 from typing import Optional
 import numpy as np 
 import cv2
-from bodyscan.kinetics.body import KineticBody
-from bodyscan.utils.visualization import make_writer
+from kineticbody.kinetics.body import KineticBody
+from kineticbody.utils.visualization import make_writer
 from pathlib import Path
-from bodyscan.visualization.skeletton import (
+from kineticbody.visualization.skeletton import (
     get_skeletton,
     LIMBS_CONFIG,
     JOINTS_CONFIG,
@@ -14,7 +12,7 @@ from bodyscan.visualization.skeletton import (
     ANGLES_CONFIG
 )
 
-
+# Getting default objects from each category to visualize
 skeletton_default = list(LIMBS_CONFIG.keys())
 joints_default = list(JOINTS_CONFIG.keys())
 unilaterals_default = list(UNILATERALS_CONFIG.keys())

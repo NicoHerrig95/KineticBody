@@ -1,17 +1,4 @@
-import os
-import sys
-from typing import Optional
-from abc import ABC, abstractmethod
-import numpy as np 
-import cv2
-from bodyscan.utils.common import read_json, save_dict_to_json
-import time
-from bodyscan.kinetics.bodyparts.base import Bodypart, get_angle, get_vector
-from dotenv import load_dotenv
-# Load .env file
-load_dotenv()
-LANDMARK_MAPPING = read_json(os.getenv("POSE_LANDMARK_MAPPING_PATH"))
-
+from kineticbody.kinetics.bodyparts.base import Bodypart
 
 
 class Head(Bodypart):

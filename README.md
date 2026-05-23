@@ -1,2 +1,2 @@
-# BodyScan
-CV body analysis draft repo
+# KineticBody
+TBC

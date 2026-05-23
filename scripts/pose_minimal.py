@@ -5,8 +5,8 @@ sys.path.insert(0, BASE_DIR)
 import cv2
 import mediapipe as mp
 import numpy as np 
-from bodyscan.utils.common import read_json
-from bodyscan.model.pose_estimation import PoseEstimator, PoseEstimatorVideoEnhancement
+from kineticbody.utils.common import read_json
+from kineticbody.model.pose_estimation import PoseEstimator, PoseEstimatorVideoEnhancement
 from model.body import KineticBody
 from model.visualization import visualize_video, visualize_image
 

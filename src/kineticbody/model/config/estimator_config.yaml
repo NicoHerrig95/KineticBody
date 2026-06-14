@@ -5,7 +5,7 @@ pose_estimator:
 
 
 filter:
-  algo: SavGol
+  algorithm: SavGol
   window_size: 9
   polynomial_order: 2 
 

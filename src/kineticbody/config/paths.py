@@ -10,11 +10,13 @@ from pathlib import Path
 
 ###### DIRS ######
 ROOT_DIR = Path(__file__).resolve().parents[3]
-KINETICBODY_DIR = ROOT_DIR / "kineticbody"
+
 
 SRC_DIR = ROOT_DIR / "src"
 DATA_DIR = ROOT_DIR / "data"
 
+
+KINETICBODY_DIR = SRC_DIR / "kineticbody"
 TMP_DIR = ROOT_DIR / "tmp"
 CACHE_DIR = TMP_DIR / "cache"
 VISUALIZATION_DIR = KINETICBODY_DIR / "visualization"
@@ -25,5 +27,5 @@ POSE_TASK_FILE_DIR = MODEL_DIR / "config" / "tensorflow"
 
 ##### PATHS #####
 VISUALIZATION_GENERAL_CONFIG_PATH = VISUALIZATION_DIR / "config" / "general.yaml"
-LANDMARK_MAPPING_PATH = KINETICS_DIR / "config" / "landmark_mapping.json"
+LANDMARK_MAPPING_PATH = KINETICS_DIR / "bodyparts" / "config" / "landmark_mapping.json"
 MODEL_CONFIG_PATH = MODEL_DIR / "config" / "estimator_config.yaml"

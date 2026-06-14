@@ -58,7 +58,9 @@ def run_pose_estimation(input_path:str,
     # instantiating filter
     if POSE_MODEL_CONFIG["filter"]:
         filter_algo = FILTER_CONFIG["algorithm"]
-        filter_kwargs = {k:v for k,v in FILTER_CONFIG.items() if k is not "algorithm"}
+        filter_kwargs = {k:v for k,v in FILTER_CONFIG.items()}
+        del filter_kwargs["algorithm"]
+        print(filter_kwargs)
         filter = FILTER_OPTIONS[filter_algo](**filter_kwargs)
 
     # instantiating pose estimator

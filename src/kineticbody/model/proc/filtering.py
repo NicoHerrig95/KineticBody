@@ -16,10 +16,10 @@ class SavGol(object):
 
     def __init__(self, 
                 window_size:int = 9, # recommended 7, 9, 11
-                polyorder:int = 2 # recommended 2, 3
+                polynomial_order:int = 2 # recommended 2, 3
                 ):
         self.window_size = window_size
-        self.polyorder = polyorder
+        self.polyorder = polynomial_order
 
 
     def __call__(self, positions:dict):

@@ -6,8 +6,6 @@ def read_json(path:str) -> dict:
     """ 
     Reads in a JSON file
     """
-    if not path.endswith(".json"):
-        path = path+".json"
     with open(path, "r") as file:
         return json.load(file)
     

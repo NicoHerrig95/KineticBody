@@ -53,7 +53,7 @@ def load_pose_model(
     model_path = POSE_TASK_FILE_DIR / f"pose_landmarker_{size}.task"
 
     settings = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=model_path),
+        base_options=BaseOptions(model_asset_path=str(model_path)),
         running_mode=model_mode,
         num_poses=1,
     )
@@ -99,6 +99,10 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             self.reduce_lag = "not applicable"
             self.filter = None # not applicable for image
 
+        elif modality == "video":
+            self.reduce_lag = reduce_lag
+            self.filter = filter
+            
         # loading model
         self.pose_landmarker = load_pose_model(
             size= size,

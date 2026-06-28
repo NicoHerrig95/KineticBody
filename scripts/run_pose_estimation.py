@@ -1,11 +1,10 @@
-import os
-import sys 
-from kineticbody.config.paths import ROOT_DIR
-from kineticbody.workflows.run_pose_estimation import run_pose_estimation
+from pathlib import Path
 import argparse
-sys.path.insert(0, ROOT_DIR)
-# testing
-file_path = "./data/angle_test.mov"
+import os
+
+from kineticbody.workflows.run_pose_estimation import run_pose_estimation
+
+
 
 
 def parse_args():
@@ -14,40 +13,44 @@ def parse_args():
     )
 
     parser.add_argument(
-        "input_path",
-        type=Path,
+        "--input-path",
+        type=str,
         help="Path to the input video file",
-        required=True
     )
 
     parser.add_argument(
-        "output_path",
-        type=Path,
-        help="Path to save positions from KineticBody object.",
-        required=True
+        "--output-path",
+        type=str,
+        help="Path to save the KineticBody model JSON.",
     )
 
     return parser.parse_args()
 
 
-
-if __name__ == "__main__":
-
+def main():
     args = parse_args()
 
-    if not args.input_path.exists():
-        raise FileNotFoundError(
-            f"Input file does not exist: {args.input_path}"
-        )
+    input_path = Path(args.input_path)
+    output_path = Path(args.output_path)
 
-    args.output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+    if not input_path.exists():
+        raise FileNotFoundError(f"Input file does not exist: {input_path}")
 
     body = run_pose_estimation(
-        input_path=args.input_path,
+        input_path=str(input_path),
         lag_reduction=True,
-        apply_filter=True
+        apply_filter=True,
     )
 
-    
+    # making parent directory
+    output_dir = output_path.parent
+    print("Output Dir")
+    print(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
 
+
+    body.save_model(str(output_path))
+
+
+if __name__ == "__main__":
+    main()

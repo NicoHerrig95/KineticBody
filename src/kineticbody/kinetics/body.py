@@ -57,7 +57,6 @@ class KineticBody(object):
 
     def save_model(self, path:str) -> None:
 
-        os.makedirs(path, exist_ok=True)
         save_dict_to_json(
             {
                 "positions" : self.positions,

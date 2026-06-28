@@ -8,7 +8,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from kineticbody.kinetics.body import KineticBody
 from kineticbody.utils.common import read_yaml
-from kineticbody.config.paths import VISUALIZATION_CONFIG_PATH
 from pathlib import Path
 
 
@@ -21,7 +20,7 @@ def get_pixel_coordinates(coordinates:tuple, w:int, h:int) -> tuple:
     return (int(x * w), int(y * h))
 
 
-def scale_line_thickness(scale:int, width:int, height:int):
+def scale_line_thickness(scale:float|int, width:int, height:int):
     """ 
     Scaling line thicknes proportional to image size
     """
@@ -39,7 +38,7 @@ def make_writer(path, fps, width, height):
     for codec, out in candidates:
         writer = cv2.VideoWriter(
             out,
-            cv2.VideoWriter_fourcc(*codec),
+            cv2.VideoWriter_fourcc(*codec), # type: ignore
             fps,
             (width, height),
         )

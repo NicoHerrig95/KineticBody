@@ -5,7 +5,7 @@ from kineticbody.config.paths import MODEL_CONFIG_PATH
 from kineticbody.utils.common import read_yaml
 from pathlib import Path
 
-CONFIG = read_yaml(MODEL_CONFIG_PATH)
+CONFIG = read_yaml(str(MODEL_CONFIG_PATH))
 POSE_MODEL_CONFIG = CONFIG["pose_estimator"]
 FILTER_CONFIG = CONFIG["filter"]
 

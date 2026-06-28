@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE_DIR)
 from kineticbody.kinetics.body import KineticBody
 from kineticbody.utils.common import read_yaml
-from kineticbody.visualization.config.bodyparts_visuals_config import bodyparts_visalization_config as config
+from kineticbody.visualization.config.bodyparts_visuals_config import bodyparts_visalization_config
 from kineticbody.visualization.functions import (
     draw_angle, 
     draw_joint_cirlce,
@@ -40,14 +40,14 @@ def get_skeletton(
     # Draw all limbs
     for limb_name in skeletton:
         for side in ["Left", "Right"]:
-            config = config["limbs"][limb_name]
+            config = bodyparts_visalization_config["limbs"][limb_name]
             attr_name = f"{limb_name}{side}"
             coords = getattr(body.limbs, attr_name)[frame_idx]
             draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
     # Draw Unilaterals
     for uni_name in unilaterals:
-        config = config["unilaterals"][uni_name]
+        config = bodyparts_visalization_config["unilaterals"][uni_name]
         coords = getattr(body.limbs, uni_name)[frame_idx]
         draw_limb(frame, coords, config["thickness_scaler"], config["color"])
 
@@ -55,7 +55,7 @@ def get_skeletton(
     # Draw all joints
     for joint_name in joints:
         for side in ["Left", "Right"]:
-            config = config["joints"][joint_name]
+            config = bodyparts_visalization_config["joints"][joint_name]
             attr_name = f"{joint_name}{side}"
             center = getattr(body.joints, attr_name)[frame_idx]
             draw_joint_cirlce(

@@ -14,12 +14,16 @@ def parse_args():
 
     parser.add_argument(
         "--input-path",
+        "--input_path",
+        dest="input_path",
         type=str,
         help="Path to the input video file",
     )
 
     parser.add_argument(
         "--output-path",
+        "--output_path",
+        dest="output_path",
         type=str,
         help="Path to save the KineticBody model JSON.",
     )

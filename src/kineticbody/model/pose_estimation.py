@@ -21,12 +21,20 @@ def convert_coords_to_cv2(p1, p2, img_width, img_height):
 def load_pose_model(
         size:str,
         modality:str,
-        lag_reduction:bool
+        lag_reduction:bool,
+        device = "CPU"
         ):
     
     """ 
     Loads POSE landmarker model.
     """
+
+
+    device_options = ["CPU", "GPU"]
+    if device not in device_options:
+        raise ValueError(f"Device must either be GPU or CPU, not {device}")
+
+
     modality_options = ["image", "video"]
     model_size_options = ["lite", "heavy"]
     if modality not in modality_options:
@@ -52,8 +60,18 @@ def load_pose_model(
     # constructing model path
     model_path = POSE_TASK_FILE_DIR / f"pose_landmarker_{size}.task"
 
+
+    # choosing device
+    if device == "CPU":
+        device_settings = BaseOptions.Delegate.CPU
+    elif device == "GPU":
+        device_settings = BaseOptions.Delegate.GPU
+
     settings = PoseLandmarkerOptions(
-        base_options=BaseOptions(model_asset_path=str(model_path)),
+        base_options=BaseOptions(
+            model_asset_path=str(model_path),
+            delegate=device_settings,
+        ),
         running_mode=model_mode,
         num_poses=1,
     )
@@ -88,7 +106,8 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             modality: str = "video", 
             reduce_lag:bool = True,
             filter:Optional[object] = None,
-            size:str="heavy"
+            size:str="heavy",
+            device:str = "CPU"
             ):
         super().__init__(mode=modality)  
         self.mapping = LANDMARK_MAPPING
@@ -107,7 +126,8 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
         self.pose_landmarker = load_pose_model(
             size= size,
             modality=modality,
-            lag_reduction=reduce_lag
+            lag_reduction=reduce_lag,
+            device=device
         )
 
         # coordinate storer 
@@ -236,7 +256,7 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             positions = self.filter(positions)
         
         print(f"Inference time: {inference_duration:.2f} seconds.")
-        print(f"Frames with no pose detected: {metadata["no_detection_count"]}")
+        print(f"Frames with no pose detected: {metadata['no_detection_count']}")
 
         body = KineticBody(
             positions=positions, 
@@ -244,8 +264,6 @@ class PoseEstimator(ModelBaseClass):  # Inherit from ModelBaseClass
             )
 
         return body
-
-
 
 
 

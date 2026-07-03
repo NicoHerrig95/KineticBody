@@ -5,6 +5,8 @@ import os
 from kineticbody.workflows.run_pose_estimation import run_pose_estimation
 
 
+LAG_REDUCTION = False
+APPLY_FILTER = False
 
 
 def parse_args():
@@ -42,8 +44,8 @@ def main():
 
     body = run_pose_estimation(
         input_path=str(input_path),
-        lag_reduction=True,
-        apply_filter=True,
+        lag_reduction=LAG_REDUCTION,
+        apply_filter=APPLY_FILTER,
     )
 
     # making parent directory

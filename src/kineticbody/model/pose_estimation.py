@@ -67,6 +67,10 @@ def load_pose_model(
     elif device == "GPU":
         device_settings = BaseOptions.Delegate.GPU
 
+    print("###############################################")
+    print(f"Model model: {model_mode}")
+    print(f"Lag Reduction: {lag_reduction}")
+    print("###############################################")
     settings = PoseLandmarkerOptions(
         base_options=BaseOptions(
             model_asset_path=str(model_path),

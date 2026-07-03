@@ -15,7 +15,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--input-path",
+        "--input_path",
         "--input-video-path",
         dest="input_video_path",
         type=str,
@@ -23,7 +23,7 @@ def parse_args():
         help="Path to the input video file.",
     )
     parser.add_argument(
-        "--model-path",
+        "--body_path",
         "--body-model-path",
         dest="body_model_path",
         type=str,
@@ -31,7 +31,7 @@ def parse_args():
         help="Path to the saved KineticBody model JSON.",
     )
     parser.add_argument(
-        "--output-path",
+        "--output_path",
         type=str,
         required=True,
         help="Path to save the visualized output video.",

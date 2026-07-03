@@ -63,6 +63,9 @@ def run_pose_estimation(input_path:str,
         print(filter_kwargs)
         filter = FILTER_OPTIONS[filter_algo](**filter_kwargs)
 
+    elif not POSE_MODEL_CONFIG["filter"]:
+        filter = None
+
     # instantiating pose estimator
     estimator = PoseEstimator(modality = modality,
                           reduce_lag = lag_reduction,

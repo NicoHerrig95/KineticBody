@@ -34,6 +34,13 @@ def parse_args():
 
 
 def main():
+<<<<<<< HEAD
+    # -> hard-coded constants
+    LAG_REDUCTION = False
+    APPLY_FILTER = False
+
+=======
+>>>>>>> parent of d61346e (added documentation videos // worked on README)
     args = parse_args()
 
     input_path = Path(args.input_path)

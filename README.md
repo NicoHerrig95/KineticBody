@@ -14,29 +14,19 @@ top of the original video.
 - Video visualization from a saved body model
 - Docker support for running pose estimation in a reproducible environment
 
-## Demo
+## Demo (frame excerpt from videos)
 
-The front-view squat example below compares the KineticBody visualization with a
-plain MediaPipe visualization.
+The front-view squat comparison shows the same pose processed by both methods:
+our KineticBody pipeline in the upper image and plain MediaPipe in the lower image.
 
-<table>
-  <tr>
-    <th>KineticBody</th>
-    <th>Plain MediaPipe</th>
-  </tr>
-  <tr>
-    <td>
-      <video src="docs/videos/squat_front_view_shortened.mov" controls width="360"></video>
-      <br>
-      <a href="docs/videos/squat_front_view_shortened.mov">Open KineticBody video</a>
-    </td>
-    <td>
-      <video src="docs/videos/squat_front_view_shortened_mp_only.mov" controls width="360"></video>
-      <br>
-      <a href="docs/videos/squat_front_view_shortened_mp_only.mov">Open plain MediaPipe video</a>
-    </td>
-  </tr>
-</table>
+![Front-view squat comparison: KineticBody pipeline above, plain MediaPipe below](docs/images/comparison.png)
+
+Video excerpts comparing our enhanced pipeline (top) with plain MediaPipe Pose
+Landmarker inference in video mode (bottom). In this example, the landmarks from
+our pipeline appear to align more closely with the subject's joints.
+
+Watch the full examples: [KineticBody pipeline](docs/videos/squat_front_view_kineticbody_pipeline.mov)
+and [plain MediaPipe Pose Landmarker](docs/videos/squat_front_view_mediapipe_poselandmarker.mov).
 
 ## Project Structure
 

@@ -2,7 +2,7 @@ from kineticbody.model.pose_estimation import PoseEstimator
 from kineticbody.kinetics.body import KineticBody
 from kineticbody.model.proc.filtering import SavGol
 from kineticbody.config.paths import MODEL_CONFIG_PATH
-from kineticbody.utils.common import read_yaml
+from kineticbody.utils.common import read_yaml, get_modality
 from pathlib import Path
 
 CONFIG = read_yaml(str(MODEL_CONFIG_PATH))
@@ -12,32 +12,6 @@ FILTER_CONFIG = CONFIG["filter"]
 FILTER_OPTIONS = {
     "SavGol" : SavGol
 }
-
-
-def get_modality(input_path: str) -> str:
-    """
-    Determine modality based on file extension.
-
-    Returns:
-        "video" for video files
-        "image" for image files
-
-    Raises:
-        ValueError if the file type is unsupported.
-    """
-
-    video_suffix_list = [".mp4", ".mov"]
-    image_suffix_list = [".png", ".jpg", ".jpeg"]
-
-    suffix = Path(input_path).suffix.lower()
-
-    if suffix in video_suffix_list:
-        return "video"
-
-    if suffix in image_suffix_list:
-        return "image"
-
-    raise ValueError(f"Unsupported file type: {suffix}")
 
 
 

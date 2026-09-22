@@ -9,7 +9,7 @@ from kineticbody.kinetics.body import KineticBody
 from kineticbody.model.proc.position_interpolation import linear_interpolation
 from kineticbody.utils.common import read_json
 from kineticbody.config.paths import LANDMARK_MAPPING_PATH, POSE_TASK_FILE_DIR
-LANDMARK_MAPPING = read_json(LANDMARK_MAPPING_PATH)
+LANDMARK_MAPPING = read_json(str(LANDMARK_MAPPING_PATH))
 
 def convert_coords_to_cv2(p1, p2, img_width, img_height):
     """ 

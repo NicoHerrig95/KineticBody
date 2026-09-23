@@ -17,12 +17,12 @@ top of the original video.
 ## Demo (frame excerpt from videos)
 
 The front-view squat comparison shows the same pose processed by both methods:
-our KineticBody pipeline in the upper image and plain MediaPipe in the lower image.
+our KineticBody pipeline on the left and plain MediaPipe on the right.
 
-![Front-view squat comparison: KineticBody pipeline above, plain MediaPipe below](docs/images/comparison.png)
+![Front-view squat comparison: KineticBody pipeline on the left, plain MediaPipe on the right](docs/images/comparison.png)
 
-Video excerpts comparing our enhanced pipeline (top) with plain MediaPipe Pose
-Landmarker inference in video mode (bottom). In this example, the landmarks from
+Video excerpts comparing our enhanced pipeline (left) with plain MediaPipe Pose
+Landmarker inference in video mode (right). In this example, the landmarks from
 our pipeline appear to align more closely with the subject's joints.
 
 Watch the full examples: [KineticBody pipeline](docs/videos/squat_front_view_kineticbody_pipeline.mov)
